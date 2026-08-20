@@ -1,0 +1,11 @@
+name = "gestione-volontari-pc"
+compatibility_date = "2024-09-01"
+pages_build_output_dir = "dist"
+
+# Dopo aver creato il namespace con:
+#   wrangler kv namespace create PC_KV
+# incolla qui l'id restituito (oppure configuralo dalla dashboard Cloudflare Pages
+# in Settings > Functions > KV namespace bindings, variabile "PC_KV").
+[[kv_namespaces]]
+binding = "PC_KV"
+id = "INCOLLA_QUI_ID_NAMESPACE"

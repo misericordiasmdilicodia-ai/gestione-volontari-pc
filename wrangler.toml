@@ -8,4 +8,4 @@ pages_build_output_dir = "dist"
 # in Settings > Functions > KV namespace bindings, variabile "PC_KV").
 [[kv_namespaces]]
 binding = "PC_KV"
-id = "id = "3fbe901d0eb144609e7c3d438556c8d2""
+id = "3fbe901d0eb144609e7c3d438556c8d2"

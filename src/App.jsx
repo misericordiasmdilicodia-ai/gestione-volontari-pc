@@ -5,6 +5,7 @@ import { ShieldPlus, Truck, Users, LogIn, LogOut, Search, Download, Printer, Rot
 const SPECIALIZZAZIONI = ["Capo Squadra", "Autista", "Soccorritore", "Volontario", "Altro"];
 const SI_NO = ["No", "Sì"];
 const TIPI_MEZZO = ["Ambulanza", "Fuoristrada", "Furgone", "Auto", "Moto", "Altro"];
+const TIPI_ALIMENTAZIONE = ["Verde", "Diesel", "GPL", "Metano", "Elettrica"];
 const ASSOCIAZIONE_DEFAULT = "Misericordia di Santa Maria di Licodia";
 const TURNI_DEFAULT = [
   { id: "t1", nome: "Turno Mattina", inizio: "08:00", fine: "14:00" },
@@ -15,12 +16,14 @@ const ADMIN_USER = "Admin";
 const ADMIN_PASS = "Admin@";
 const POLL_MS = 8000;
 
-const KEY_VOL = "protcivile:volontari";
-const KEY_MEZZI = "protcivile:mezzi";
-const KEY_CONFIG = "protcivile:config";
-const KEY_ARCHIVIO = "protcivile:archivio";
+const KEY_VOL = (eventId) => `protcivile:volontari:${eventId}`;
+const KEY_MEZZI = (eventId) => `protcivile:mezzi:${eventId}`;
+const KEY_CONFIG = (eventId) => `protcivile:config:${eventId}`;
+const KEY_EVENTI = "protcivile:eventi";
 const KEY_ASSOC_CORRENTE = "protcivile:associazione-corrente";
 const KEY_ASSOC_DB = "protcivile:associazioni-db";
+const KEY_EVENTO_OP = "protcivile:evento-operatore";
+const KEY_EVENTO_ADMIN = "protcivile:evento-admin";
 
 const ASSOCIAZIONI_DB = [["5", "ASSOCIAZIONE NAZIONALE S.S.T. - SEARCH AND RESCUE – ODV DELEGAZIONE DI SCIACCA", "C / o S t a dio Comunale L. Gurrera, s.n.c.", "Sciacca", "AG"], ["6", "ASSOCIAZIONE NAZIONALE CARABINIERI SEZIONE DI VIZZINI", "Via Roma, 35", "Vizzini", "CT"], ["7", "ARCI CACCIA FEDERAZIONE PROVINCIALE DI CATANIA", "Via Felice Paradiso, 3 c/o Com Acireale", "Acireale", "CT"], ["10", "ASSOCIAZIONE PALERMO 4X4 ODV", "Via del Melograno, 18/A", "Palermo", "PA"], ["14", "ORGANIZZAZIONE NAZIONALE DI VOLONTARIATO GIUBBE D'ITALIA", "Via Orto S. Antonino, 7", "Chiusa Sclafani", "PA"], ["16", "FRATERNITA DI MISERICORDIA DI VALLEDOLMO", "Via G Garibaldi, 165", "Valledolmo", "PA"], ["24", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO DELEGAZIONE TORREGROTTA – ODV", "V i a M e z z a s a l ma, 27 c/o Municipio di Torregrotta", "Torregrotta", "ME"], ["28", "ASSOCIAZIONE CULTURALE NUOVA ACROPOLI SIRACUSA", "Viale Zecchino, 72", "Siracusa", "SR"], ["38", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI MASCALUCIA", "Piazza Leonardo Da Vinci", "Mascalucia", "CT"], ["39", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO DELEGAZIONE DI NARO", "Piazza Cesare Battisti, 1", "Naro", "AG"], ["47", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI ACICATENA", "Via Sottotenente Barbagallo, 2", "Acicatena", "CT"], ["52", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO", "Piazza Macello, 3", "Lercara Friddi", "PA"], ["54", "NUCLEO PRONTO INTERVENTO SCIARESE", "Via Lo Varco, 25", "Sciara", "PA"], ["56", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI MODICA", "Piazza Principe di Napoli, 17", "Modica", "RG"], ["64", "PROTEZIONE CIVILE ADRANO", "Piazza S. Francesco, 13", "Adrano", "CT"], ["65", "ASSOCIAZIONE DI VOLONTARIATO “RADIO VALLE ALCANTARA”", "Piazza Raggia, 13", "Taormina", "ME"], ["70", "ASSOCIAZIONE VOLONTARIATO MILAZZO", "Via Francesco Crispi, 81", "Milazzo", "ME"], ["73", "ORGANIZZAZIONE NAZIONALE VOLONTARIATO GIUBBE D'ITALIA SEZIONE DI ALTAVILLA MILICIA", "Via Crocifisso, 24", "Altavilla Milicia", "PA"], ["90", "PROTEZIONE CIVILE CENTRO OPERATIVO ISIDE", "Viale Madre Teresa di Calcutta, s.n.", "Mineo", "CT"], ["92", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI VITTORIA", "Via S. Incardona c/o Mercato Ortofrutticolo", "Vittoria", "RG"], ["96", "ASSOCIAZIONE VOLONTARI CITTA'DI NOTO", "Via Silvio Spaventa, 2", "Noto", "SR"], ["101", "STRUTTURA REGIONALE SICILIA - FEDERAZIONE ITALIANA RICETRASMISSIONI – CITIZEN'S BAND – F.I.R. C.B. ODV", "V ia XXIV Maggio, 56", "Messina", "ME"], ["106", "ASSOCIAZIONE VOLONTARI DEL SOCCORSO", "Circonvallazione Costa degli Archi, s.n.c.", "Santa Croce Camerina", "RG"], ["107", "CORPO AUSILIARIO PROTEZIONE CIVILE “G. CARUANO”", "C.da Mendolilli Capitina", "Vittoria", "RG"], ["108", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SANTA CROCE DI CAMERINA", "Via Carmine, 95", "Santa Croce Camerina", "RG"], ["109", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI RAGUSA", "Corso Italia, 72", "Ragusa", "RG"], ["120", "CORPO VOLONTARI PROTEZIONE CIVILE ENNA PUBBLICA ASSISTENZA", "Via Scifitello, snc", "Enna", "EN"], ["124", "FRATERNITA DI MISERICORDIA DI SAN PIERO PATTI", "Via Primo Maggio, 2", "San Piero Patti", "ME"], ["130", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI PRIOLO GARGALLO", "C.e.r.i.c.a c/da Cava Sorciaro, s.n.", "Priolo Gargallo", "SR"], ["132", "ORGANIZZAZIONE WHISKEY MIKE", "Via Grotta del Toro, 48", "Marsala", "TP"], ["136", "EKOS SICILIA AMBIENTE E CULTURA", "Via Fiorita , 7/A", "Catania", "CT"], ["138", "PUBBICA ASSISTENZA SICILIA SOCCORSO O.N.L.U.S.", "C.da Bellia, 2", "Piazza Armerina", "EN"], ["143", "FRATERNITA DI MISERICORDIA DI PEDARA", "Via Pizzo Ferro, 5", "Pedara", "CT"], ["154", "VOLONTARIATO SICILIANO PER LA PROTEZIONE CIVILE SEZIONE DI FRANCOFONTE", "Via Onorevole Sebastiano Franco", "Francofonte", "SR"], ["155", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI COMISO", "Via G. Bufalino", "Comiso", "RG"], ["159", "RANGERS INTERNATIONAL- DELEGAZIONE 552.005 UCRIA", "Via Padre Bernardino", "Ucria", "ME"], ["172", "PUBBLICA ASSISTENZA AMICO SOCCORSO ALDO INGALA", "Via Signore Ritrovato, 4", "Barrafranca", "EN"], ["181", "E.R.A.P. EMERGENZA RADIOAMATORI ASSOCIATI PALERMO ODV", "Via Monte Mario, 5", "Palermo", "PA"], ["196", "ORGANIZZAZIONE NAZIONALE DI VOLONTARIATO GIUBBE D'ITALIA – SEZIONE COMUNALE DI ARAGONA", "Via B. Naselli, 173", "Aragona", "AG"], ["200", "ENTE SALVAGUARDIA AMBIENTE E FORESTE ESAF-GRUPPO VOLONTARI EMERGENZE", "Via Felice Fontana, 23", "Catania", "CT"], ["207", "NUCLEO DIOCESANO DI PROTEZIONE CIVILE", "Via Emilia, 21", "Messina", "ME"], ["208", "ORGANIZZAZIONE VOLONTARI DI P.C. RAGUSA O.N.L.U.S", "Via Achille Grandi, s.n.c", "Ragusa", "RG"], ["214", "ORGANIZZAZIONE EUROPEA COORDINAMENTO NAZIONALE VOLONTARIATO E IMPRESA SOCIALE E.T.S.-DISTACCAMENTO DI PARTINICO", "Via Papa Paolo VI, 3", "Partinico", "PA"], ["220", "ORGANIZZAZIONE NAZIONALE VOLONTARIATO GIUBBE D'ITALIA – SEZIONE DI CEFALU'", "Via Vitaliano Brancati, 19", "Cefalù", "PA"], ["222", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SCORDIA", "Via Aldo Moro", "Scordia", "CT"], ["225", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI GIARDINI NAXOS", "Via Jannuzzo palazzo VV.UU.", "Giardini Naxos", "ME"], ["228", "GOS MODICA AVCM DELL'ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO VOLONTARI ODV", "Via Furio Camillo, 3", "Modica", "RG"], ["231", "GRUPPO VOLONTARIO CINOFILO ACESE ODV", "Via Manzoni, 13", "Acireale", "CT"], ["239", "REPARTO OPERATIVO SOCCORSO E SOLIDARIETA'", "Via Modica, 72", "Siracusa", "SR"], ["245", "PUBBLICA ASSISTENZA VOLONTARI RIUNITI RACALMUTO", "Via Vincenzo Scimè, 5", "Racalmuto", "AG"], ["250", "CLUB 27 CATANIA", "Viale F. Fontana", "Catania", "CT"], ["267", "ORGANIZZAZIONE NAZIONALE DI VOLONTARIATO GIUBBE D'ITALIA – SEZIONE COMUNALE DI CALASCIBETTA", "Via Nazionale, 139", "Calascibetta", "EN"], ["268", "NUCLEO DI PROTEZIONE CIVILE ANC DI NICOLOSI", "Via Garibaldi, 40", "Nicolosi", "CT"], ["269", "PUBBLICA ASSISTENZA “IL SOCCORSO”", "V i a A n t o n i n o I n corvaia, 2", "Misiliscemi", "TP"], ["275", "LEGAMBIENTE PROTEZIONE CIVILE FILIPPO SALIMENI", "Via Cortile S. Agostino, 17", "Agira", "EN"], ["289", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI ISPICA", "Via dell'Arte, s.n.c.", "Ispica", "RG"], ["295", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI PALAZZOLO ACREIDE", "Via G. Campailla, s.n.", "Palazzolo Acreide", "SR"], ["306", "GRIFONE, GRUPPO DI CORLEONE ADERENTE PROCIV – ARCI NAZIONALE", "Via S. Lucia c/o ufficio tecnico", "Corleone", "PA"], ["326", "CONFRATERNITA DI MISERICORDIA DI NICOLOSI", "Piazza Vittorio Emanuele, 26", "Nicolosi", "CT"], ["342", "ORGANIZZAZIONE MAGNA VIS PER LA LOGISTICA ED I MEZZI SPECIALI", "Piazza Mulini, 13", "Trabia", "PA"], ["356", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DEL COMUNE DI SINAGRA", "Piazza S. Teodoro", "Sinagra", "ME"], ["389", "ASSOCIAZIONE DI VOLONTARIATO PROTEZIONE CIVILE DI BIANCAVILLA", "Via dei Peloritani, 1", "Biancavilla", "CT"], ["401", "VOLO CLUB ALBATROS ASSOCIAZIONE ONLUS DI VOLONTARIATO PER LA P.ROTEZIONE CIVILE", "C.da Canne Masche", "Termini Imerese", "PA"], ["410", "“S.E.R. L.A.N.C.E. C.B.” SERVIZIO EMERGENZA RADIO VOLONTARI DI PROTEZIONE CIVILE", "Via La Porta, 19", "Porto Empedocle", "AG"], ["441", "NUCLEO DI PROTEZIONE CIVILE ANC", "Via Marcello Paternò, s.n.", "Biancavilla", "CT"], ["445", "ASSOCIAZIONE NAZ. CARABINIERI GRUPPO DI PROTEZIONE CIVILE GUARDIA MANGANO", "Via Tolmezzo, 10", "Acireale Guardia Mangano", "CT"], ["459", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SORTINO", "Viale Mario Giardino", "Sortino", "SR"], ["460", "CONFRATERNITA DI MISERICORDIA DI PORTOPALO DI CAPOPASSERO", "Via Garibaldi, 53", "Portopalo di Capo Passero", "SR"], ["463", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI ACI SANT'ANTONIO", "Via Regina Margherita, 8", "Aci Sant'Antonio", "CT"], ["464", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI LICODIA EUBEA", "Via Piersanti Mattarella, 4", "Licodia Eubea", "CT"], ["472", "CROCE D'ORO PORTO EMPEDOCLE ORGANIZZAZIONE VOLONTARIA", "Via Roma, 42", "Porto Empedocle", "AG"], ["473", "GRUPPO” ETNA” - CLUB – C.B.- S. VENERINA", "Via Mazzini, 75", "Santa Venerina", "CT"], ["478", "FORUM REGIONALE DELLE ASSOCIAZIONI DI VOLONTARIATO DELLA PROTEZIONE CIVILE", "Via Trieste, 25", "Palermo", "PA"], ["481", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI RANDAZZO", "Piazza Municipio, 1", "Randazzo", "CT"], ["483", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI CANICATTINI BAGNI", "Piazza Caduti di Nassiriya", "Canicattini Bagni", "SR"], ["494", "DELEGAZIONE L.A.N.C.E. C.B. TUSA", "Via Roma", "Tusa", "ME"], ["495", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI NICOLOSI", "Via Calvario, 27", "Nicolosi", "CT"], ["498", "GRUPPO ALFA REGIONE SICILIA", "Via Santa Teresa, 3", "Chiaramonte Gulfi", "RG"], ["502", "ASSOCIAZIONE VOLONTARI CITTA' DI SIRACUSA", "Via Beneventano, 1", "Siracusa", "SR"], ["505", "PUBBLICA ASSISTENZA PROCIVIS", "Via Vico la Mantia, 5", "Gela", "CL"], ["508", "A.P.A.S. PATERNO'", "Via Giovanni Verga, 91", "Paternò", "CT"], ["509", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI TRECASTAGNI", "Via Benedetto Croce, 5", "Trecastagni", "CT"], ["510", "C.B. G. MARCONI", "Via Spiaggia, 319", "Mascali", "CT"], ["601", "SMAV - SAN MAURO ASSOCIAZIONE VOLONTARIATO ONLUS", "Via Acqua Nuova, 7", "San Mauro Castelverde", "PA"], ["602", "CONFRATERNITA DI MISERICORDIA SAN GREGORIO DI CATANIA – ONLUS", "Via Umberto, 67", "San Gregorio di Catania", "CT"], ["603", "RANGERS EUROPA DIVISIONE DI NICOLOSI", "Via Montearso, 1", "Nicolosi", "CT"], ["604", "“RANGERS EUROPA” DIVISIONE DI MONTEROSSO ALMO", "C.da Margi, snc (sede COM)", "Monterosso Almo", "RG"], ["605", "SOCIETA' NAZIONALE DI SALVAMENTO SEZIONE DI LENTINI/CARLENTINI – CAPITANERIA DI PORTO DI AUGUSTA", "Via San Francesco D'Assisi, 151", "Lentini", "SR"], ["606", "CONFRATERNITA DI MISERICORDIA", "Via Lombardia, 1", "Bronte", "CT"], ["608", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI RESUTTANO", "Piazza Vittorio Emanuele III, 1", "Resuttano", "CL"], ["610", "CENTRO ASCOLTO SOLIDARIETA' S. PAOLO APOSTOLO – O.N.L.U.S.", "Via Piave, 4", "Solarino", "SR"], ["611", "ASSOCIAZIONE VOLONTARIATO E PROTEZIONE CIVILE VILLA GRAZIA DI CARINI", "Via Garita, 13", "Carini", "PA"], ["612", "CLUB RADIO C.B. - ODV", "Via Sant'Andrea, 96", "Barcellona Pozzo di Gotto", "ME"], ["614", "OPERE DI ASSISTENZA, SOCCORSO E SOLIDARIETA' DELLA CROCE GIOVANNEA", "Via Libertà, 24", "Partinico", "PA"], ["615", "PLUTIA EMERGENZA", "Via Alessandro Manzoni, 94", "Piazza Armerina", "EN"], ["616", "O.N.L.U.S. VOLONTARI OPERATORI DI SOCCORSO CERAMI", "Via Tomasi di Lampedusa, 2", "Cerami", "EN"], ["617", "ASSOCIAZIONE CATTOLICA CULTURALE ITALIANA RADIOPERATORI", "Via Garibaldi, 379", "Messina", "ME"], ["618", "RANGERS INTERNATIONAL DELEGAZIONE 555.001 NICOSIA", "Via Sant'Anna , 61", "Nicosia", "EN"], ["619", "FRATERNITA DI MISERICORDIA DI GRAVINA DI CATANIA", "Via Zangrì, 10", "Gravina di Catania", "CT"], ["622", "ASSOCIAZIONE PROVINCIALE VIGILI DEL FUOCO DISCONTINUI VOLONTARI", "Via Seneca, 8", "Trapani", "TP"], ["624", "ORGANIZZAZIONE NAZIONALE DI VOLONTARIATO GIUBBE D'ITALIA – SEZIONE COMUNALE DI AGIRA", "C.da Tre Fontane, snc", "Agira", "EN"], ["629", "ASSOCIAZIONE VOLONTARIATO FUTURA", "Via Campania, 20", "Ispica", "RG"], ["630", "ANTRAS ASSOCIAZIONE NAZIONALE DI NUCLEI OPERATIVI NEL SETTORE DEI TRASPORTI E DELLA PROTEZIONE", "Viale Regione Siciliana. 64", "Palermo", "PA"], ["634", "FRATERNITA DI MISERICORDIA FLORIDIA", "Via Labriola", "Floridia", "SR"], ["635", "ASSOCIAZIONE DI VOLONTARIATO PER LA PROTEZIONE CIVILE ED AMBIENTALE", "Via Libertà, 3", "Zafferana Etnea", "CT"], ["636", "PROTEZIONE CIVILE GERACI SICULO", "Via Don Orione, 1", "Geraci Siculo", "PA"], ["639", "CAVALIERI DI SICILIA ODV", "Via Francesco Crispi, 1", "Borgetto", "PA"], ["640", "A.R.I. ASSOCIAZIONE RADIOAMATORI ITALIANI", "Via F. Fontana, 23", "Catania", "CT"], ["641", "TRAVEL SOCCORSO ORGANIZZAZIONE NON LUCRATIVA DI UTILITA' SOCIALE", "Via Volontari Italiani del Sangue, 7/9", "Termini Imerese", "PA"], ["645", "PROCIV ARCI GRUPPO ANTHARES BOLOGNETTA", "Via Pietro Novelli, 108", "Bolognetta", "PA"], ["648", "GUARDIE AMBIENTALI COMANDO ITALIA", "V i a S e r r a d i f a l c o , 55", "Palermo", "PA"], ["654", "ASSOCIAZIONE VOLONTARIATO PER LA PROTEZIONE CIVILE TRIPI", "Via F. Todaro, 127", "Tripi", "ME"], ["655", "MISTRAL", "Via Francesco Crispi, 28", "Belpasso", "CT"], ["657", "PEGASO", "Via Pezzingoli, 4", "Monreale", "PA"], ["658", "GRUPPO INTERCOMUNALE DI VOLONTARIATO DI PROTEZIONE CIVILE DEI COMUNI DI BOMPENSIERE, MILENA E MONTEDORO-BO.MI.MO.", "Via Principe di Scalea, 126", "Bompensiere", "CL"], ["661", "PROTEZIONE CIVILE MONTE LA STELLA", "Via P. Nenni, s.n.c.", "Assoro", "EN"], ["664", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI TROINA", "Via Conte Ruggero, 2", "Troina", "EN"], ["665", "“LA PANTERA” GRUPPO DI VOLONTARIATO PROTEZIONE CIVILE ASSISTENZIALE E CULTURALE", "Via Mezzasalma, 10", "Rometta Marea", "ME"], ["668", "GUARDIA COSTIERA AUSILIARIA- ONLUS - CENTRO REGIONALE DELLA SICILIA - GRUPPO OPERATIVO ISOLA DELLA FEMMINE", "Via Palermo, 63", "Isola delle Femmine", "PA"], ["669", "CONFRATERNITA DI MISERICORDIA DI SPADAFORA", "Via Provinciale San Martino", "Spadafora", "ME"], ["670", "PUBBLICA ASSISTENZA PACECO SOCCORSO ODV", "V i a L eonardo Pizzardi, 15", "Misiliscemi", "TP"], ["672", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI POGGIOREALE", "Via Ximenes, 1", "Poggioreale", "TP"], ["673", "VOLONTARI PROTEZIONE CIVILE SAMBUCA", "Viale Giovanni XXIII c/o UTC", "Sambuca di Sicilia", "AG"], ["675", "ASSOCIAZIONE NAZIONALE CARABINIERI NUCLEO VOLONTARI VIGILANZA E PROTEZIONE CIVILE", "Via Vittorio Emanuele, 71", "Aci Sant'Antonio", "CT"], ["677", "CONFRATERNITA DI MISERICORDIA DI BOMPIETRO", "Via Roma, 27", "Bompietro", "PA"], ["680", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI MANIACE", "Via Beato Placido, 13", "Maniace", "CT"], ["682", "CLUB ELETTRA", "Viale Epicarmo Corbino, 50", "Augusta", "SR"], ["683", "C.B. OMEGA CANICATTINI BAGNI", "Via Pipernice, s.n.c.", "Canicattini Bagni", "SR"], ["684", "RANGERS INTERNATIONAL DELEGAZIONE 553-005 DI CALATABIANO", "Via Garibaldi, 4", "Calatabiano", "CT"], ["686", "FEDERAZIONE - PROCIV - SICILIA - ADERENTE ALL'ASSOCIAZIONE NAZIONALE VOLONTARI PER LA P.C. PROCIV - ARCI NAZIONALE", "V i a Pietro Novelli, 108", "Bolognetta", "PA"], ["687", "NUCLEO DI PROTEZIONE CIVILE A.D.M.I. ASSOCIAZIONE DIPENDENTI MINISTERO DELL'INTERNO – DI SAN PIETRO CLARENZA", "V ia Felice Fontana, 23", "Catania", "CT"], ["688", "AQUILE DELL'ETNA", "Via Pierre De Coubertin, 15", "Catania", "CT"], ["689", "A.M.A. ONLUS (ASSOCIAZIONE MEDITERRANEA ASSISTENZA)", "Via Calasanzio, 3", "Ragusa", "RG"], ["691", "I CAVALIERI DELLA SIKANIA – ONLUS", "C/da Canale, 3", "Sant'Angelo Muxaro", "AG"], ["693", "ORGANIZZAZIONE NAZIONALE. VOLONTARI GIUBBE D'ITALIA SEZIONE SANTA ELISABETTA", "Via Kennedy, 21", "Santa Elisabetta", "AG"], ["696", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI LENTINI", "Piazza Umberto I, 31", "Lentini", "SR"], ["701", "ORGANIZZAZIONE EUROPEA VOLONTARI DI PREVENZIONE E PROTEZIONE CIVILE", "Piazza Garibaldi, 1", "Camastra", "AG"], ["702", "ORGANIZZAZIONE NAZIONALE VOLONTARIATO GIUBBE D'ITALIA SEZIONE COMUNALE DI VILLAROSA", "Via Cossa, s.n.c.", "Villarosa", "EN"], ["703", "ASSOCIAZIONE VOLONTARIATO PROTEZIONE CIVILE GRIFONI", "Via Umberto, 170", "Favara", "AG"], ["706", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI BELPASSO", "Piazza Municipio, 9", "Belpasso", "CT"], ["709", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SAN PIETRO CLARENZA", "Via Padre Somma, 9", "San Pietro Clarenza", "CT"], ["711", "FRATERNITA DI MISERICORDIA DI BARRAFRANCA", "Via Montello, 42", "Barrafranca", "EN"], ["712", "ORGANIZZAZIONE NAZIONALE VOLONTARIATO GIUBBE D'ITALIA – COORDINAMENTO NAZIONALE", "Via Indipendenza, 35", "Aragona", "AG"], ["718", "PUBBLICA ASSISTENZA AMICO SOCCORSO O.N.L.U.S.", "Via Segesta, 3", "Trapani", "TP"], ["721", "FRATERNITA DI MISERICORDIA SAN LEONE", "Via S. Leone, 1", "Catania", "CT"], ["723", "ASSOCIAZIONE NAZIONALE S.S.T. - SEARCH AND RESCUE – ODV DELEGAZIONE DI CASTELVETRANO", "Via Nicolò Copernico, 36", "Castelvetrano", "TP"], ["725", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SOLARINO", "Piazza del Plebiscito, 1", "Solarino", "SR"], ["726", "“AGESCI SICILIA - ASSOCIAZIONE GUIDE E SCOUT CATTOLICI ITALIANI”", "Via F.lli Bandiera, 82", "Gravina di Catania", "CT"], ["727", "E.R.A. T. EMERGENZA RADIOAMATORI ASSOCIATI TRAPANI ODV", "V i a T r e S a n t i , 7", "Alcamo", "TP"], ["729", "V.A.B. VIGILANZA ANTINCENDI BOSCHIVI MILITELLO ODV", "C.da Rena Rossa presso Elipista", "Militello Val Di Catania", "CT"], ["730", "FRATERNITA DI MISERICORDIA MARIA IMMACOLATA", "Via A. de Gasperi, 2", "Catenanuova", "EN"], ["731", "FONTANA DELLE ROSE ODV", "Piazza San Francesco, 7", "Campofranco", "CL"], ["733", "ASSOCIAZIONE P.A. S.O.S. VALDERICE ONLUS", "Via S. Barnaba, 43", "Valderice", "TP"], ["734", "FRATERNITA DI MISERICORDIA DI MESSINA", "Via Taormina Palazzina IACP", "Messina", "ME"], ["737", "ARETUSA SOCCORSO O.D.V.", "Via Elorina, 148", "Siracusa", "SR"], ["738", "RANGERS INTERNATIONAL DELEGAZIONE 552.002 GALATI MAMERTINO", "Via Cavour località Contura, s.n.c.", "Galati Mamertino", "ME"], ["740", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI ITALA", "Via Principe Umberto", "Itala", "ME"], ["742", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI VILLAFRANCA SICULA", "Via Vittorio Emanuele, 126", "Villafranca Sicula", "AG"], ["743", "ASSOCIAZIONE INTERNAZIONALE “PANTERE VERDI O.N.L.U.S.” RAGGRUPPAMENTO PROVINCIALE DI TRAPANI", "C/da Cozzaro, 52", "Marsala", "TP"], ["744", "ASSOCIAZIONE INTERNAZIONALE \"PANTERE VERDI O.N.L.U.S.\" RAGGRUPPAMENTO PROVINCIALE DI CALTANISSETTA", "Via Napoleone Colajanni, 208", "Caltanissetta", "CL"], ["746", "FRATERNITA DI MISERICORDIA", "Via Concerie, 35", "Melilli", "SR"], ["750", "CONFRATERNITA DI MISERICORDIA DI REALMONTE", "Via dei Gerani, 11/13", "Realmonte", "AG"], ["759", "VOLONTARI PROTEZIONE CIVILE DELIA", "Via Pola, 13", "Delia", "CL"], ["760", "ASSOCIAZIONE INTERNAZIONALE PANTERE VERDI ONLUS RAGGRUPPAMENTO PROVINCIALE DI CATANIA", "Via Felice Fontana, 23", "Catania", "CT"], ["761", "FRATERNITA DELLE MISERICORDIE DI ACIREALE", "Via Paolo Vasta, 180", "Acireale", "CT"], ["765", "ASSOCIAZIONE INTERNAZIONALE “PANTERE VERDI ONLUS” - RAGGRUPPAMENTO PROVINCIALE DI ENNA", "Via Bandiera, 72", "Valguarnera Caropepe", "EN"], ["771", "ASSOCIAZIONE AVULSS DI AGIRA", "Via Roma, 22", "Agira", "EN"], ["773", "ASSOCIAZIONE EUROPEA OPERATORI POLIZIA - GRUPPO VOLONTARIATO E PROTEZIONE CIVILE SEZIONE SICUREZZA", "Via S. Gregorio, 10", "Aci Castello", "CT"], ["774", "P.A. AURORA O.N.L.U.S", "Via Vita, 26", "Marsala", "TP"], ["775", "ODV GRUPPO DI VOLONTARIATO E PROTEZIONE CIVILE DELL'ASSOCIAZIONE NAZIONALE DELLA POLIZIA DI STATO – SEZIONE DI CALTANISSETTA", "Via Trieste, 82", "Caltanissetta", "CL"], ["778", "ASSOCIAZIONE VOLONTARI EUROPEI TUTELA AMBIENTE ODV-ETS", "V i a d e g l i A r c hi, 28", "Mazara del Vallo", "TP"], ["782", "FRATERNITA DI MISERICORDIA SANTA MARIA DI OGNINA", "Piazza Ognina, 11", "Catania", "CT"], ["786", "RANGERS INTERNATIONAL DELEGAZIONE SAN FILIPPO MONGIUFFI MELIA N° 552-018", "Piazza San Nicolò, 6", "Mongiuffi Melia", "ME"], ["788", "PUBBLICA ASSISTENZA TRINACRIA EMERGENCY", "Via Falcone, s.n.c. C/da Brucazzi", "Gela", "CL"], ["789", "GUARDIE AMBIENTALI D'ITALIA - DELEGAZIONE PROVINCIALE DI TRAPANI", "Via Ponte Salemi, 23/A", "Trapani", "TP"], ["792", "PUBBLICA ASSISTENZA INTERLAND MADONITA", "C.da Sant'Elia, s.n.c.", "Petralia Sottana", "PA"], ["794", "CONFRATERNITA DI MISERICORDIA DI MODICA", "Via Mercè, 53", "Modica", "RG"], ["796", "NUCLEO OPERATIVO DI PROTEZIONE CIVILE EMERGENZA AMBIENTALE", "Via Papa Giovanni XXIII, 54", "Terrasini", "PA"], ["798", "FRATERNITA DI MISERICORDIA DI TRECASTAGNI", "Via Arciprete Torrisi, 5", "Trecastagni", "CT"], ["800", "FRATERNITA DI MISERICORDIA DI ZAFFERANA ETNEA", "Via Libertà, 3", "Zafferana Etnea", "CT"], ["805", "ORGANIZZAZIONE DI VOLONTARIATO “MARI E MONTI 2004”", "Via E. Cianciolo, 26", "Messina", "ME"], ["806", "ASSOCIAZIONE DI PROTEZIONE CIVILE AMBIENTALE RICERCA E SOCCORSO O.N.L.U.S. A.P.C.A.R.S.", "Corso Garibaldi, 186", "San Filippo del Mela", "ME"], ["807", "ASSOCIAZIONE PUBBLICA ASSISTENZA LA PROVVIDENZA ONLUS", "C.da Damusello, 568", "Marsala", "TP"], ["808", "ORGANIZZAZIONE DI PROTEZIONE CIVILE \"OVERLAND\"", "Fondo Pasqualino, 5", "Monreale", "PA"], ["809", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO – DELEGAZIONE CAPACI ODV”", "Via del Fante, 17", "Capaci", "PA"], ["814", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI FICARAZZI", "Corso Umberto I, 412", "Ficarazzi", "PA"], ["817", "CONFRATERNITA DI MISERICORDIA DI ROCCAPALUMBA", "Via Garibaldi, 40", "Roccapalumba", "PA"], ["822", "ORGANIZZAZIONE PER LA PROTEZIONE CIVILE LE ALI", "Via Rosa Balistreri, 5", "Palermo", "PA"], ["823", "ARCAVERDE", "Via Luigi Manfredi, 2/G-H", "Palermo", "PA"], ["824", "ASSOCIAZIONE VOLONTARI DEL MEDITERRANEO -ODV-ETS", "Via Itria, 88/B", "Marsala", "TP"], ["828", "C.E.S.U.L. CORPO EUROPEO SOCCORSO UMANITARIO LOGISTICO – ODV", "Viale S. Panagia, 162", "Siracusa", "SR"], ["835", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI RIESI", "Piazza Don Pietro D'Altariva", "Riesi", "CL"], ["836", "COMITATO REGIONALE A.N.P.A.S. SICILIA", "Via Sardegna, 36", "Enna", "EN"], ["837", "GRUPPO OPERATIVO EMERGENZA 837 ODV", "C.da Fallari Mugno S.P. 25", "Ragusa", "RG"], ["838", "ASSOCIAZIONE GUARDIE ITTICHE VENATORIE ENDAS “G.I.S.E. ODV ETS”", "Via degli Asteroidi, 2", "Agrigento", "AG"], ["839", "ORGANIZZAZIONE NAZIONALE DI VOLONTARIATO GIUBBE D'ITALIA", "Via Tivoli, 125", "Raffadali", "AG"], ["843", "SOS BUSETO ODV", "Via Murfi, 4", "Buseto Palizzolo", "TP"], ["844", "GUARDIE AMBIENTALI TRINACRIA", "Via Pantelleria, 24", "Mazara del Vallo", "TP"], ["847", "ASSOCIAZIONE VOLONTARI S. MARCO ONLUS", "Via Cappuccini, 92", "San Marco D'Alunzio", "ME"], ["848", "E.R.A. CITTA' DI ANTILLO E VALLE D'AGRO'", "Via Cesare Battisti, 1", "Antillo", "ME"], ["850", "GRUPPO COMUNALE DI VOLONTARIATO DI PROTEZIONE CIVILE DI TERMINI IMERESE", "Piazza Duomo", "Termini Imerese", "PA"], ["854", "GARIBALDINI A CAVALLO -ODV", "Via Giuseppe Di Matteo, 371", "Castellana Sicula", "PA"], ["856", "CORPO PROTEZIONE AMBIENTALE SICILIA- ODV SEZIONE DI MAZARA DEL VALLO", "Via S.Maria delle Giumarre, 19", "Mazara del Vallo", "TP"], ["858", "NUOVA ACROPOLI FLORIDIA -ODV (ETS)", "Via F. Turati, 60/A", "Floridia", "SR"], ["861", "NUCLEO OPERATIVO EMERGENZA SICILIA O.N.L.U.S.", "S.P. Nunziata Piedimonte, 255", "Mascali", "CT"], ["862", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI MELILLI", "Via Concerie, 1", "Melilli", "SR"], ["866", "RINASCITA VENTIMIGLIESE - ONLUS", "Via Umberto I, 60", "Ventimiglia di Sicilia", "PA"], ["868", "RANGERS INTERNATIONAL DELEGAZIONE 552.021 MOJO ALCANTARA", "Via Vanella Mojo, 19", "Mojo Alcantara", "ME"], ["869", "ELIOS COMITATO PROVINCIALE MESSINA", "V i a N i c o l ò P a t t i , 1 3", "Rometta Marea", "ME"], ["873", "RANGERS INTERNATIONAL - DELEGAZIONE N. 553-010", "Via San Francesco, s.n.c.", "Castiglione di Sicilia", "CT"], ["874", "FRATERNITA MISERICORDIA MISTERBIANCO", "Via V. Veneto, 245", "Misterbianco", "CT"], ["877", "CONFRATERNITA DI MISERICORDIA DI FERLA", "Via Pessina, s.n.c.", "Ferla", "SR"], ["881", "AQUILE DEGLI EREI REGALBUTO", "Via Vittorio Emanuele, 88", "Regalbuto", "EN"], ["883", "ORGANIZZAZIONE EUROPEA VIGILI DEL FUOCO VOLONTARI DI PROTEZIONE CIVILE – DISTACCAMENTO COMUNALE DI", "Via Piazza, 27", "Corleone", "PA"], ["893", "CORLEONE NUCLEO OPERATIVO INTERFORZE SICILIA – VOLONTARI DI PREVENZIONE E PROTEZIONE CIVILE", "C.da Piana", "Sant'Agata di Militello", "ME"], ["895", "CROCE DEL SUD", "Vicolo Pantelleria, 19", "Palermo", "PA"], ["896", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI BAUCINA", "Via Umberto ,78", "Baucina", "PA"], ["898", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO VOLONTARI DELEGAZIONE DI BISACQUINO", "Via Collegio, 9", "Bisacquino", "PA"], ["900", "FRATERNITA DI MISERICORDIA DI SANTA MARIA DI LICODIA", "Via Isonzo, 4", "Santa Maria di Licodia", "CT"], ["907", "ORGANIZZAZIONE NAZIONALE DI VOLONTARIATO GIUBBE D'ITALIA - SEZIONE COMUNALE DI CORLEONE", "Via Federico de Maria, 2", "Corleone", "PA"], ["908", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI CAPO D'ORLANDO", "Via Vittorio Emanuele, 7", "Capo D'orlando", "ME"], ["912", "CONFRATERNITA DI MISERICORDIA DI PATTI", "Via XX Settembre, 34", "Patti", "ME"], ["913", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI LIBRIZZI", "Piazza Catena, 4", "Librizzi", "ME"], ["914", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SANTA LUCIA DEL MELA", "Via Pietro Nenni", "Santa Lucia del Mela", "ME"], ["917", "RANGERS INTERNATIONAL DELEGAZIONE 552.024 LETOJANNI", "Via IV Novembre, 84", "Letojanni", "ME"], ["918", "ASSOCIAZIONE VOLONTARI DI PROTEZIONE CIVILE - BEATO V. SALANITRO - O.N.L.U.S.", "Cortile Traina, 5", "Ciminna", "PA"], ["919", "ASSOCIAZIONE PREVENZIONE FORESTE SICILIA", "Via Provinciale per Riposto, 34", "Acireale", "CT"], ["923", "PUBBLICA ASSISTENZA SOCCORSO ALCAMO", "Via Ruggero Settimo, 125", "Alcamo", "TP"], ["926", "ASSOCIAZIONE NAZIONALE ANGELI PER LA VITA DELEGAZIONE DI CASTELVETRANO", "Via Gaspare Parrino, 13", "Castelvetrano", "TP"], ["927", "FRATERNITA MISERICORDIA DI ADRANO", "Via Pietro Nenni, 20/E", "Adrano", "CT"], ["931", "PROTEZIONE CIVILE P.A. CALTANISSETTA", "Via Melfa, 19", "Caltanissetta", "CL"], ["933", "ASSOCIAZIONE GUARDIA NAZIONALE O.N.L.U.S.", "Via Umberto", "Francavilla di Sicilia", "ME"], ["934", "ASSOCIAZIONE VOLONTARI DONATORI SANGUE -AVIS", "Piazzetta del Volontariato, 1", "Piazza Armerina", "EN"], ["935", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SANT'ALFIO", "Via V. Emanuele, 4", "Sant'Alfio", "CT"], ["938", "GRUPPO COMUNALE VOLONTARIATO DELLA PROTEZIONE CIVILE DI CASTELDACCIA", "Piazza Matrice", "Casteldaccia", "PA"], ["939", "ASSOCIAZIONE GIOVANILE RIGENERHA", "Via Rosolino Siragusa, 48", "Montemaggiore Belsito", "PA"], ["940", "ARMERINA EMERGENZA", "Via Don Lorenzo Milani, snc presso Parco Urbano San Pietro", "Piazza Armerina", "EN"], ["941", "A.N.T.R.A.S. - ASSOCIAZIONE NAZIONALE DI NUCLEI OPERATIVI DEL SETTORE DEI TRASPORTI E DELLA PROTEZIONE CIVILE - NUCLEO DI COORDINAMENTO CITTA' DI TRAPANI", "Viale Marche, 15", "Trapani", "TP"], ["943", "ASSOCIAZIONE NAZIONALE S.S.T.- SEARCH AND RESCUE - DELEGAZIONE DI RIBERA - ODV", "C / o V illa Comunale ex Ufficio Agricoltura", "Ribera", "AG"], ["946", "FRATERNITA DI MISERICORDIA DI AUGUSTA", "Via Gramsci, 21/23", "Augusta", "SR"], ["950", "ASSOCIAZIONE DI SOCCORSO E VOLONTARIATO ORIZZONTI", "C.da San Filippo, s.n.c.", "Furnari", "ME"], ["951", "RANGERS INTERNATIONAL DELEGAZIONE 552.027 “KALFA“ ROCCAFIORITA", "Via Fontana Nuova", "Roccafiorita", "ME"], ["952", "FALCHI D'ITALIA", "Piazza M. Guidara", "Sant'Angelo di Brolo", "ME"], ["954", "FRATERNITA MISERICORDIA DI VALVERDE", "Via Calì, 43", "Valverde", "CT"], ["956", "IL SOCCORSO - CAVE DI CUSA - ONLUS", "Via Fiume, 5", "Campobello di Mazara", "TP"], ["959", "CONFRATERNITA DI MISERICORDIA DI MARINEO", "Via Agrigento, 42", "Marineo", "PA"], ["961", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI LASCARI", "Piazza Aldo Moro, 6", "Lascari", "PA"], ["962", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SALAPARUTA", "Via Regione Siciliana", "", "TP"], ["964", "GRUPPO INTERNAZIONALE VOLONTARIATO ARCOBALENO DELEGAZIONE DI MAZARA DEL VALLO 2010 ODV", "Via Inghilterra, 7", "Mazara del Vallo", "TP"], ["966", "ASSOCIAZIONE ITALIANA BELVEDERE", "Via G.Verga, 24", "Piedimonte Etneo", "CT"], ["968", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE E ANTINCENDIO DI ALTOFONTE", "Piazza Falcone e Borsellino, 18", "Altofonte", "PA"], ["969", "GRUPPO SPELEOLOGICO SANTA ELISABETTA", "Via Rosario Livatino, 2", "Santa Elisabetta", "AG"], ["970", "ASSOCIAZIONE NAZIONALE G.O.E. GRUPPO OPERATIVO DI EMERGENZA", "Via G.Amendola, 22", "Salemi", "TP"], ["976", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO - VOLONTARIATO E PROTEZIONE CIVILE – DELEGAZIONE DI MAZARA DEL VALLO", "Via Guglielmo Marconi, 37", "Mazara del Vallo", "TP"], ["977", "ASSOCIAZIONE NAZIONALE S.S.T.- SEARCH AND RESCUE-ODV DELEGAZIONE DI PETROSINO", "Via Lazio, 9", "Petrosino", "TP"], ["978", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI AUGUSTA", "Via Principe Umberto, 89", "Augusta", "SR"], ["981", "P.A. SICILIA EMERGENZA ONE", "Via Piedimonte, 13", "Catania", "CT"], ["982", "PEGASO ONLUS", "Via Pietro Castelli, 284", "Messina", "ME"], ["983", "ASSOCIAZIONE AMBIENTE E SALUTE ONLUS", "Via Siracusa, 15", "Siracusa", "SR"], ["987", "E.R.A. SEZIONE DI CALTANISSETTA", "Villaggio Faina, 8/4", "Campofranco", "CL"], ["988", "PROCIV - ARCI N.P.N. ASSOCIAZIONE VOLONTARI PROTEZIONE CIVILE", "Via E.Toti, 6", "Sommatino", "CL"], ["990", "CASTEL GONZAGA ASSOCIAZIONE VOLONTARIATO PROTEZIONE CIVILE", "Via Montepiselli c/o Parrocchia S.Teresa di Gesù Bambino", "Messina", "ME"], ["995", "CONFRATERNITA DI MISERICORDIA DI CATANIA - PORTO", "Piazza San Francesco di Paola, s.n.", "Catania", "CT"], ["998", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI CARLENTINI", "Via F.Morelli", "Carlentini", "SR"], ["999", "ASSOCIAZIONE EUROPEA OPERATORI POLIZIA - SEZIONE DI PORTO EMPEDOCLE", "Via Marconi, 10", "Porto Empedocle", "AG"], ["1000", "P.A. HUMANITAS TRAPANI ODV", "Via Benedetto Valenza,, 27/A", "Trapani", "TP"], ["1004", "P.A. GRUPPO VOLONTARI PROTEZIONE CIVILE NICOSIA", "Via Bernardo di Falco, 20", "Nicosia", "EN"], ["1007", "CONFRATERNITA DI MISERICORDIA DI PALERMO", "Via Salvatore Corleone, 9", "Palermo", "PA"], ["1008", "O.N.V.G.I. ORGANIZZAZIONE NAZIONALE VOLONTARI GIUBBE D'ITALIA - SEZIONE COMUNALE DI PALAZZO ADRIANO", "Via Vittorio Veneto, 11", "Palazzo Adriano", "PA"], ["1010", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI GRATTERI", "Via delle Scuole", "Gratteri", "PA"], ["1014", "ELIGIO' SOCCORSO", "Vico Fusatina, 11", "Gela", "CL"], ["1015", "ASSOCIAZIONE NAZIONALE SAN MARCO", "Vicolo del Castellaccio, 21", "Palermo", "PA"], ["1024", "GUARDIA MARINA NAZIONALE ONLUS", "Via Filippo Patti, 19", "Palermo", "PA"], ["1025", "ATTIVITA' OPERATIVA DI PROTEZIONE CIVILE E SOCIALE", "Via Normanni, 5", "Palermo", "PA"], ["1029", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SAN TEODORO", "Via Vittorio Emanuele, 13", "San Teodoro", "ME"], ["1032", "CISAR IQ9PX – SEZIONE DI PANTELLERIA", "Corso Umberto, I", "Pantelleria", "TP"], ["1034", "GRUPPO DI VOLONTARI DELLA PROTEZIONE CIVILE ELIMO ERICINI ODV", "Via Alessandro Volta, 47", "Erice", "TP"], ["1036", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI ACIREALE", "Via Felice Paradiso, 55/B", "Acireale", "CT"], ["1038", "ASSOCIAZIONE NAZIONALE VOLONTARIATO E COMUNICAZIONE SOLIDALE RETE 100 PASSI ODV", "Via Giosuè Carducci, 8", "Palermo", "PA"], ["1043", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI FURCI SICULO", "Via Roma, 56", "Furci Siculo", "ME"], ["1044", "ASSOCIAZIONE NAZIONALE VOLONTARIATO ASSISTENZA SOCCORSO SICILIA", "Via Signore Ritrovato, 4", "Barrafranca", "EN"], ["1047", "ASSOCIAZIONE SICILY PROTEZIONE CIVILE AIDONE", "Via Lorenzo D'Arena, 18", "Aidone", "EN"], ["1051", "O. D.V. ASSOCIAZIONE VOLONTARI PROTEZIONE COSTIERA AMBIENTALE", "Via Don Primo Mazzolari, 101", "Mazara del Vallo", "TP"], ["1052", "FIRE RESCUE ALCAMO", "Via Autonomia Siciliana, 12", "Alcamo", "TP"], ["1053", "CONFRATERNITA DI MISERICORDIA DI PIANA DEGLI ALBANESI", "V i a l e R egione Siciliana Sud-Est, 900", "Palermo", "PA"], ["1054", "ASSOCIAZIONE VOLONTARI DI PROTEZIONE CIVILE AQUILE MONTESERRA", "Via della Regione, 26", "Viagrande", "CT"], ["1056", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SAN GIOVANNI LA PUNTA", "Piazza Europa, 1", "San Giovanni La Punta", "CT"], ["1063", "VOLONTARI DEL TERZO SETTORE", "Via Polveriera, 63", "Messina", "ME"], ["1067", "ASSOCIAZIONE MISERICORDIA DI ENNA", "Via della Resistenza, 111", "Enna", "EN"], ["1071", "ASSOCIAZIONE ORGANIZZAZIONE VOLONTARI DI PROTEZIONE CIVILE DI MONTELEPRE", "Via Circonvallazione, 98", "Montelepre", "PA"], ["1072", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO VOLONTARIATO E PROTEZIONE CIVILE DELEGAZIONE DI PALERMO CITTA'", "Piazzetta Pietro Speciale, 9", "Palermo", "PA"], ["1073", "A.V.I.S.P. - ASSOCIAZIONE VOLONTARI ITALIANI SOCCORSO PRIZZI - A.V.I.S.P. - ONLUS", "Parco Urbano Madonna", "Prizzi", "PA"], ["1078", "CORPO VOLONTARI PER IL SOCCORSO", "Via della Passiflora C.da Manfria", "Gela", "CL"], ["1080", "RANGERS INTERNATIONAL DI S. SALVATORE DI FITALIA", "C.da Scrisera", "San Salvatore di Fitalia", "ME"], ["1081", "PSICOLOGI PER I POPOLI - REGIONE SICILIA", "Via G. D'Annunzio, 52", "Piazza Armerina", "EN"], ["1082", "FRATERNITA DI MISERICORDIA “S. MASSIMILIANO KOLBE “ DI REGALBUTO", "Via Palermo, 4", "Regalbuto", "EN"], ["1083", "CORPO VOLONTARI PROTEZIONE CIVILE LEONFORTE", "Via Zona Torretta (ex scuola elementare)", "Leonforte", "EN"], ["1084", "PENSIAMO IN POSITIVO – ODV PALERMO", "Via C. Airoldi 45/47", "Palermo", "PA"], ["1086", "COMUNIONE FRATERNA", "Via Maddalena, 36", "Messina", "ME"], ["1088", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE CITTA' DI PACHINO", "Via dello Stadio, s.n.c.", "Pachino", "SR"], ["1089", "FRATERNITA DI MISERICORDIA DI SAN GIUSEPPE", "Via Monte Bianco", "Letojanni", "ME"], ["1092", "IL GABBIANO ONLUS", "Via C. Barbagallo, 128", "Acireale", "CT"], ["1093", "SEZIONE DI CATANIA ONLUS DEL C.N.G.E.I", "Piazza Santa Maria della Guardia, 25", "Catania", "CT"], ["1096", "FRATERNITA DI MISERICORDIA DI BELPASSO", "Via A. De Gasperi, 5", "Belpasso", "CT"], ["1098", "ASSOCIAZIONE NAZIONALE S.S.T.( SQUADRE DI SOCCORSO TECNICO) ODV SEARCH AND RESCUE", "Via Oberdan, 42", "Canicattì", "AG"], ["1101", "RANGERS SEZIONE PROVINCIALE DI ENNA", "Via Legnano, 22", "Enna", "EN"], ["1103", "CENTRO CINOAGONISTICO SIRACUSANO", "Strada Carancino, 73", "Siracusa", "SR"], ["1104", "ASSOCIAZIONE DI PROTEZIONE ED EMERGENZE CIVILI INGEGNERI", "Via Francesco Crispi, 120", "Palermo", "PA"], ["1107", "EUROPEAN RADIOAMATEURS ASSOCIATION SEZIONE CITTA' DI MISTRETTA", "Via Libertà, 249", "Mistretta", "ME"], ["1112", "ASSOCIAZIONE NUOVA ACROPOLI ODV", "Via Verona, 19", "Catania", "CT"], ["1115", "N.O.E. - NUCLEO OPERATIVO EMERGENZE", "Via XXIV Maggio, 56", "Messina", "ME"], ["1116", "GRUPPO VOLONTARI ITALIA", "Via Forcile, 5", "Catania", "CT"], ["1118", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI POLLINA POEFI", "Piazza Maddalena", "Pollina", "PA"], ["1120", "RANGERS INTERNATIONAL DELEGAZIONE 556-001 NISCEMI", "Viale Mario Gori, 83", "Niscemi", "CL"], ["1121", "ODV/ETS ASSOCIAZIONE EUROPEA OPERATORI POLIZIA (A.E.O.P.) - SEZIONE COMUNALE DI TRAPANI", "Via Luigi Ferrari, 6/A", "Trapani", "TP"], ["1124", "LE AQUILE DI CATANIA SEZIONE LUIGI RULLO", "Viale Mario Rapisardi, 558", "Catania", "CT"], ["1127", "ORGANIZZAZIONE EUROPEA COORDINAMENTO NAZIONALE VOLONTARIATO E IMPRESA SOCIALE E.T.S. DISTACCAMENTO DI MISILMERI", "Via Madonna del Carmelo, 25", "Misilmeri", "PA"], ["1128", "NUCLEO OPERATIVO INTERFORZE SICILIA VOLONTARI DI PREVENZIONE E PROTEZIONE CIVILE", "Via San Giuseppe, 4", "Gangi", "PA"], ["1132", "MARI E MONTI 2004", "C.da Bagni", "Rometta", "ME"], ["1133", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI LONGI", "Via Roma, 2", "Longi", "ME"], ["1135", "CORPO VOLONTARIO DI SOCCORSO IN MARE", "Viale Mario Rapisardi, 14", "Ispica", "RG"], ["1136", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SICULIANA", "Via Roma, plesso ex scuola elementare", "Siculiana", "AG"], ["1137", "ASSOCIAZIONE NAZIONALE FINANZIERI D'ITALIA SEZIONE DI AGRIGENTO - PROTEZIONE CIVILE", "Via G. Amendola, 2", "Agrigento", "AG"], ["1140", "CROCE COSTANTINIANA DI SAN GIORGIO - SICILIA - ONLUS", "Piazza Unità d'Italia, 11", "Palermo", "PA"], ["1145", "ORGANIZZAZIONE NAZIONALE DI VOLONTARIATO GIUBBE D'ITALIA – SEZIONE COMUNALE DI SANTA FLAVIA", "Via Antonio Carcione, 3", "Santa Flavia", "PA"], ["1148", "V.A.B. VIGILANZA ANTINCENDI BOSCHIVI", "Via Siracusa, 28", "Scordia", "CT"], ["1150", "AIDONE SOCCORSO", "Via Papa Giovanni XXIII, s.n.c.", "Aidone", "EN"], ["1152", "LABORATORIO VERDE DI FAREAMBIENTE TRAPANI", "Piazza Umberto I, 52", "Trapani", "TP"], ["1154", "AVIS COMUNALE DI VILLAFRATI", "Piazza Fratelli Rosselli, 4/A", "Villafrati", "PA"], ["1157", "ASSOCIAZIONE NAZIONALE DI AZIONE SOCIALE", "Via Veronica Gambara, 6", "Palermo", "PA"], ["1161", "CATANIA SUB", "Via G.D'Annunzio, 77", "Catania", "CT"], ["1162", "CORPO VOLONTARI SICILIA TRINACRIA PROTEZIONE CIVILE AIDONE", "Via Giordano, 36", "Aidone", "EN"], ["1163", "A.C.S.A. ASSOCIAZIONE CROCE SICILIANA ASSISTENZA", "Corso dei Mille, 313", "Palermo", "PA"], ["1164", "CONFRATERNITA DI MISERICORDIA DI RAGALNA", "Piazza Cisterna, 1", "Ragalna", "CT"], ["1165", "A.I.Z.A. GUARDIA NAZIONALE (ASSOCIAZIONE ITTICA- ZOOFILA - AMBIENTALE)", "Via Simone Catalano, 113", "Valderice", "TP"], ["1167", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI PETRALIA SOPRANA", "Piazza del Popolo", "Petralia Soprana", "PA"], ["1168", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI MEZZOJUSO", "Piazza Umberto I, 6", "Mezzojuso", "PA"], ["1169", "CONFRATERNITA DI MISERICORDIA DI SANT'ANGELO DI BROLO", "Piazzale Michele Guidara, s.n.c.", "Sant'Angelo di Brolo", "ME"], ["1171", "CONFRATERNITA DI MISERICORDIA DI CATANIA SANTA CROCE", "Villaggio S.Agata zona B, 26/B", "Catania", "CT"], ["1174", "GUARDIE AMBIENTALI SICILIA", "Villaggio Zia Lisa II, 55", "Catania", "CT"], ["1175", "ASSOCIAZIONE DI VOLONTARIATO AMICI DEL SOCCORSO MONSIGNOR VITO PERNICONE", "Piazza Marconi, 8", "Regalbuto", "EN"], ["1177", "GLI ANGELI", "Via S.Vincenzo De Paoli, 15", "Termini Imerese", "PA"], ["1178", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO – DELEGAZIONE DI PARTINICO ODV", "Via Scupara, 13", "Partinico", "PA"], ["1180", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI ALCARA LI FUSI", "Via della Rinascita, 16", "Alcara Li Fusi", "ME"], ["1181", "VIGILANTES", "Largo Pescheria ex Mercato Ittico, s.n.c.", "Termini Imerese", "PA"], ["1182", "ASSOCIAZIONE NAZIONALE NUCLEO OPERATIVO EMERGENZE", "Via A. Bertani, 31", "Castelvetrano", "TP"], ["1183", "ORGANIZZAZIONE DI VOLONTARIATO NOVA MILITIA CHRISTI ORDINE DEI CAVALIERI TEMPLARI GUARDIANI DI PACE", "Via Felice Bisazza, 91", "Messina", "ME"], ["1187", "G.I.V.A. - DELEGAZIONE DI CASTELLANA SICULA ODV", "C.da Passo L'Abate, s.n.c.", "Castellana Sicula", "PA"], ["1189", "ULTREYA PEDARA ODV", "Via dei Garofani, 4", "Pedara", "CT"], ["1190", "ASSOCIAZIONE NAZIONALE MARINAI D'ITALIA", "Via Papa Giovanni Paolo II, 3", "Fiumefreddo di Sicilia", "CT"], ["1191", "ASSOCIAZIONE SOCIALE CULTURALE RICREATIVA RISTOWORLD ITALY", "Via Zia Lisa, 153", "Catania", "CT"], ["1192", "ASSOCIAZIONE EUROPEA OPERATORI POLIZIA GRUPPO VALVERDE ONLUS", "Via Seminara, 32", "Valverde", "CT"], ["1193", "A.V.Y. ASSOCIAZIONE VOLONTARIATO YPSIGRO", "Via Li Volsi, 59", "Castelbuono", "PA"], ["1194", "CONFRATERNITA DI MISERICORDIA DI LIBRINO", "Viale Castagnola, 2", "Catania", "CT"], ["1195", "P.A. ANGELI DEL SOCCORSO", "Strada Palermo, 144", "Trapani", "TP"], ["1197", "COORDINAMENTO ASSOCIAZIONI DI VOLONTARIATO FORZA INTERVENTO RAPIDO", "V iale Castagnola, 2", "Catania", "CT"], ["1198", "ASSOCIAZIONE EUROPEA OPERATORI POLIZIA GRUPPO ITTICO VENATORIO ZOOFILO AMBIENTALE SEZIONE NICOLOSI” (CT)", "Via Giacomo Leopardi, 5", "Nicolosi", "CT"], ["1201", "CONFRATERNITA DI MISERICORDIA DI PRIOLO GARGALLO", "Via del Fico 2/4", "Priolo Gargallo", "SR"], ["1202", "A.E.O.P. ASSOCIAZIONE EUROPEA OPERATORI POLIZIA - SEZIONE AMBIENTALE PALERMO", "Via Ugo la Malfa, 62", "Palermo", "PA"], ["1204", "G.I.V.A. GRUPPO INTERNAZIONALE VOLONTARIATO ARCOBALENO DELEGAZIONE DI TRAPANI – ODV", "Via Tito Livio, 7", "Trapani", "TP"], ["1205", "GUARDIA NAZIONALE A.E.Z.A – ASSOCIAZIONE ECOLOGICA ZOOFILA AMBIENTALE", "C.da Bosco, 499", "Marsala", "TP"], ["1207", "NUOVA ACROPOLI AUGUSTA ODV (ETS)", "Viale Italia, 262", "Augusta", "SR"], ["1208", "LEGAMBIENTE DEI PELORITANI", "C/o CAI Via Natoli, 20", "Messina", "ME"], ["1209", "GRUPPO VOLONTARI SICILIA", "Via Felice Fontana, 23", "Catania", "CT"], ["1212", "A.VO.TE.AM. GRUPPO VOLONTARI PROTEZIONE CIVILE AMBIENTALE E TERRITORIALE", "Via Messina, 142", "Bronte", "CT"], ["1214", "G.I.V.A - GRUPPO INTERNAZIONALE VOLONTARIATO ARCOBALENO DELEGAZIONE DI MARSALA – ODV", "C.da Darà, 422", "Marsala", "TP"], ["1216", "U.G.E.S. S.O.S. PALERMO - URGENTE GESTIONE EMERGENZE SOCIALI E SERVIZI OPERATIVI DI SOCCORSO PALERMO", "Via Alcide de Gasperi, 70", "Palermo", "PA"], ["1217", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO VOLONTARIATO E PROTEZIONE CIVILE DELEGAZIONE ZISA", "Via Sebastiano Camarrone, 47/A", "Palermo", "PA"], ["1222", "RIVIVERE A COLORI SAPONARA", "Via Dafne, s.n.c.", "Saponara", "ME"], ["1224", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI LICATA", "P i a zza Progresso, 10", "Licata", "AG"], ["1225", "ASSOCIAZIONE MAGNA VIS", "V i a Marco Polo, 54", "Catania", "CT"], ["1227", "ELPIS NAVE OSPEDALE ONLUS", "Via Generale Domenico Giglio, 3", "Trapani", "TP"], ["1228", "RANGERS INTERNATIONAL DELEGAZIONE 552.029 BROLO", "Via Statale, 38", "Brolo", "ME"], ["1229", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI TORRENOVA", "Via Benedetto Caputo", "Torrenova", "ME"], ["1232", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI PIRAINO", "Via Dante Alighieri, 7", "Piraino", "ME"], ["1233", "GUARDIA NAZIONALE A.E.Z.A", "Via Cavour, 119", "Noto", "SR"], ["1234", "I CARE ONLUS", "Via Malta, 8", "Cefalù", "PA"], ["1235", "ORGANIZZAZIONE PER LA LOGISTICA E MEZZI SPECIALI MAGNA VIS BAGHERIA OdV", "Vicolo Palma, 2", "Bagheria", "PA"], ["1237", "A.I.C.E.S. ASSOCIAZIONE PER L'IMPEGNO CIVILE E SOCIALE", "Via San Lorenzo, 154", "Palermo", "PA"], ["1239", "RANGERS INTERNATIONAL DELEGAZIONE 552.020 GIOIOSA MAREA", "Corso Uliveto", "Gioiosa Marea", "ME"], ["1240", "SAFETY-E.T.S.", "Piazza Stazione, s.n.c.", "Brolo", "ME"], ["1241", "CONFEDERAZIONE G.I.V.A.", "Piazza Graziella Campagna, 13", "Rometta Marea", "ME"], ["1242", "ORGANIZZAZIONE EUROPEA COORDINAMENTO NAZIONALE VOLONTARIATO E IMPRESA SOCIALE ETS", "P i a z z a S t a z i o n e , s . n . c .", "Brolo", "ME"], ["1246", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI POZZALLO", "Viale Australia, s.n.c. c/o centro C.O.M.", "Pozzallo", "RG"], ["1247", "MILO DOG SPORTING", "Via Salemi, 135 c/da Crociferi", "Trapani", "TP"], ["1248", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI FORZA D'AGRO'", "Piazza Giovanni XXIII", "Forza D'Agrò", "ME"], ["1249", "RANGERS INTERNATIONAL DELEGAZIONE 552.001 CASTELL'UMBERTO", "Via Generale Cascino, s.n.c.", "Castell'Umberto", "ME"], ["1250", "GUARDIA COSTIERA AUSILIARIA O.N.L.U.S. - REGIONE SICILIA", "Via Giuseppe La Villa, 11", "Palermo", "PA"], ["1251", "COORDINAMENTO MAGNA VIS - SICILIA", "Piazza Mulini, 13", "Trabia", "PA"], ["1253", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SCALETTA ZANCLEA", "Piazza Municipio, s.n.c.", "Scaletta Zanclea", "ME"], ["1254", "VOLONTARI ISOLA DI STROMBOLI", "Via Fabio Filzi, 35", "Lipari", "ME"], ["1257", "ASSISTENZA E VOLONTARIATO SOLIDALE", "Via Vittorio Emanuele, 58", "Montelepre", "PA"], ["1259", "I FALCHI - ONLUS DI PROTEZIONE CIVILE E VIGILANZA AMBIENTALE (ENTE UMANITARIO )", "Via Capitini, 46", "Palma di Montechiaro", "AG"], ["1261", "GUARDIA COSTIERA AUSILIARIA CENTRO OPERATIVO DI SCIACCA", "Via Marche, 3", "Sciacca", "AG"], ["1262", "NEW CITTA' DI CATANIA – ONLUS", "Via Cardi, 98/100", "Catania", "CT"], ["1264", "P.A. EUROSOCCORSO – ODV", "Piazzale Papa Giovanni II", "Trapani", "TP"], ["1265", "ODV FLY TEAM", "Strada Brisciano, 21 C/da Marausa", "Misiliscemi", "TP"], ["1266", "ORGANIZZAZIONE EUROPEA COORDINAMENTO NAZIONALE VOLONTARIATO IMPRESA SOCIALE ETS – DISTACCAMENTO DI MESSINA", "Via La Farina, 280", "Messina", "ME"], ["1267", "GRUPPO VOLONTARIO DI PROTEZIONE CIVILE DELL'ASSOCIAZIONE NAZIONALE DELLA POLIZIA DI STATO- SEZIONE DI CATANIA", "Via Monsignor Ventimiglia,18", "Catania", "CT"], ["1268", "COMUNITA' MASCI MESSINA 3 – STELLA POLARE", "Via Comunale Santo, s.n. c/o parrocchia S. Maria della Consolazione", "Messina", "ME"], ["1269", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI LIPARI", "Piazza Mazzini, 1", "Lipari", "ME"], ["1270", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI RACCUJA", "Piazza 2 Giugno, 1", "Raccuja", "ME"], ["1273", "ASSOCIAZIONE RADIOAMATORI PELORITANI – ODV", "Via Scite, 13 – 9b scala C", "Messina", "ME"], ["1274", "FRATERNITA DI MISERICORDIA DI CATANIA", "Via Etnea, 595", "Catania", "CT"], ["1276", "G.E.P.A.- SICILIA-ODV", "Via Centamore, 159", "Biancavilla", "CT"], ["1277", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI PALMA DI MONTECHIARO", "Via Fiorentino, 89", "Palma di Montechiaro", "AG"], ["1278", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI GRAMMICHELE", "Piazza Carlo Maria Carafa, 1", "Grammichele", "CT"], ["1279", "GRUPPO INTERNAZIONALE VOLONTARIATO ARCOBALENO – G.I.V.A DELEGAZIONE DI PARTANNA – ODV", "Via Palermo, 126", "Partanna", "TP"], ["1280", "MISERICORDIA DI MAZARA DEL VALLO – SAN VITO", "Via Giotto, 23", "Mazara del Vallo", "TP"], ["1282", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO -DELEGAZIONE TORRETTA ODV", "Via S.Quasimodo, 20", "Torretta", "PA"], ["1284", "GRUPPO COMUNALE VOLONTARITO DI PROTEZIONE CIVILE DI VILLAFRANCA TIRRENA", "Via Don Luigi Sturzo, 3", "Villafranca Tirrena", "ME"], ["1285", "M.A.S.C.I. PALERMO 3 AQUILE RANDAGIE", "Via Mura di San Vito, 12", "Palermo", "PA"], ["1287", "CROCE BIANCA", "Via Pelligra, s.n.c.", "Misilmeri", "PA"], ["1288", "GUARDIA COSTIERA VOLONTARIA C. O. MESSINA", "Via Consolare Pompea – Località Fortino, s.n.", "Messina", "ME"], ["1289", "FRATERNITA' DI MISERICORDIA DI GIARRE", "Piazza Ungheria, 11", "Giarre", "CT"], ["1290", "FARMACISTI VOLONTARI PER LA PROTEZIONE CIVILE SEZ IONE CATANIA", "Via G. D'Annunzio, 43/A", "Catania", "CT"], ["1292", "CROCE ROSSA ITALIANA COMITATO DI CATANIA", "Via Etnea, 353", "Catania", "CT"], ["1293", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO VOLONTARIATO E PROTEZIONE CIVILE - COORDINAMENTO REGIONALE SICILIA", "P i a z z e tta Pietro Speciale, 9", "Palermo", "PA"], ["1294", "CROCE ROSSA ITALIANA - COMITATO DI PALERMO", "Via Pietro Nenni, 75", "Palermo", "PA"], ["1295", "TRISCELE NUCLEO PROTEZIONE CIVILE AUTONOMA SICILIANA", "Via Fratelli Campo, 46", "Palermo", "PA"], ["1296", "P.A EMERGENCY LIFE", "Via Firenze, 6", "Porto Empedocle", "AG"], ["1300", "S.S.T. SQUADRE DI SOCCORSO TECNICO – DELEGAZIONE CINOFILI ARCHIMEDE SIRACUSA ODV", "Via Romagna, 41", "Siracusa", "SR"], ["1301", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI MOTTA SANT'ANASTASIA", "Piazza Umberto, 22", "Motta Sant'Anastasia", "CT"], ["1303", "ASSOCIAZIONE PUBBLICA ASSISTENZA TUTELA AMBIENTE VOLONTARIATO E PROTEZIONE CIVILE PALERMO 4", "Passaggio Gino Marinuzzi, 4", "Palermo", "PA"], ["1305", "ASSOCIAZIONE VOLONTARI NUCLEO OPERATIVO VALLE JATO", "Via Acquanuova, 44", "San Giuseppe Jato", "PA"], ["1306", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO DELEGAZIONE DI BAGHERIA 1 ODV", "Via Giuseppe Mulè, 43", "Bagheria", "PA"], ["1308", "ASSOCIAZIONE NAZIONALE PUBBLICA ASSISTENZA E PROTEZIONE CIVILE LUCE", "Via Domenico La Bruna, 1", "Trapani", "TP"], ["1310", "G.I.V.A. - GRUPPO INTERNAZIONALE VOLONTARIATO ARCOBALENO - DELEGAZIONE COMUNALE DI PACECO", "Via L.Ariosto, 26", "Paceco", "TP"], ["1312", "GUARDIA COSTIERA AUSILIARIA DI TRAPANI- ODV", "Via Giuseppe La Russa, 28", "Erice", "TP"], ["1315", "A.C.S. ASSOCIAZIONE CANI DA SALVATAGGIO", "Via Apollo, 34", "Palermo", "PA"], ["1316", "A.E.Z.A. GUARDIA NAZIONALE COMANDO PROVINCIALE MONREALE", "Via Casale Settimo, 6/Q", "Palermo", "PA"], ["1319", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI LENI", "Via Libertà, 33", "Leni (Isola Salina)", "ME"], ["1323", "CROCE ROSSA ITALIANA - COMITATO DEL TIRRENO NEBRODI", "Piazza Stazione, s.n.c.", "Brolo", "ME"], ["1324", "CROCE ROSSA ITALIANA – COMITATO DI MILAZZO - ISOLE EOLIE – ODV", "Via San Paolino, 1", "Milazzo", "ME"], ["1325", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI PIETRAPERZIA", "Via San Domenico, 9", "Pietraperzia", "EN"], ["1326", "P.A. PROCIVIS", "Via Barrile, 9", "Licata", "AG"], ["1327", "TYNDARIS ONLUS", "Via Case Nuove Russo, 5", "Patti", "ME"], ["1328", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SAVOCA", "Piazza D'Annunzio, 1", "Savoca", "ME"], ["1330", "NUCLEO OPERATIVO INTERFORZE SICILIA", "Via Suffia, 11", "Aidone", "EN"], ["1331", "CROCE ROSSA ITALIANA- COMITATO DI CALTANISSETTA", "Via Xiboli, 345 ex stabilimento Averna", "Caltanissetta", "CL"], ["1332", "PUBBLICA ASSISTENZA PROCIVIS DI RIPOSTO", "Via Archimede, s.n.", "Riposto", "CT"], ["1333", "ASSOCIAZIONE PROTEZIONE CIVILE SECURITY", "Via dei Peloritani, 118", "Biancavilla", "CT"], ["1335", "RANGER SEZIONE PROVINCIALE DI CATANIA", "C.da Pernicotto", "Adrano", "CT"], ["1336", "ORGANIZZAZIONE EUROPEA VOLONTARI DI PREVENZIONE E PROTEZIONE CIVILE- DISTACCAMENTO DI SANT'AGATA DI MILITELLO", "Via Duca D'Aosta, 66", "Sant'Agata di Militello", "ME"], ["1337", "C.O.E.S. COORDINAMENTO OPERATIVO EMERGENZE", "Via Oliveto I, 30", "Sant'Agata di Militello", "ME"], ["1338", "V.A.B. VIGILANZA ANTINCENDI BOSCHIVI SICILIA", "Viale Madre Teresa di Calcutta, s.n.c.", "Mineo", "CT"], ["1339", "UNITI PER LA VITA", "Corso Umberto, 94", "Sciara", "PA"], ["1340", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO CARINI ODV", "Via Pastificio, 5/A", "Carini", "PA"], ["1341", "ASSOCIAZIONE NAZIONALE VOLONTARIATO E COMUNICAZIONE SOLIDALE SFERRACAVALLO ODV", "Via Tabò, 39", "Palermo", "PA"], ["1342", "GRUPPO COMUNALE DI VOLONTARIATO DI PROTEZIONE CIVILE DI PANTELLERIA", "Piazza Cavour, 15", "Pantelleria", "TP"], ["1343", "A.R.I. CASTELVETRANO", "Via Piersanti Mattarella, 110", "Castelvetrano", "TP"], ["1344", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SALEMI", "Via San Matteo", "Salemi", "TP"], ["1345", "ASSOCIAZIONE NAZIONALE CARABINIERI SEZIONE DI MESSINA GRUPPO DI FATTO ODV", "Via San Giovanni di Malta, 1/B", "Messina", "ME"], ["1347", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SAN CATALDO", "Piazza Papa Giovanni XXIII", "San Cataldo", "CL"], ["1348", "GUARDIA COSTIERA AUSILIARIA ONLUS CENTRO REGIONALE DELLA SICILIA -GRUPPO OPERATIVO DI LICATA", "Via Martiri della Libertà, 21", "Licata", "AG"], ["1350", "ROYAL WOLF RANGERS", "Via Fratelli Belleo, 58/B", "Ragusa", "RG"], ["1351", "ITALIAN HELP SYSTEM FOR LIFE - IHS ODV", "V i a A . Sangiuliano, 319/321", "Catania", "CT"], ["1354", "PSICOLOGI PER I POPOLI SICILIA - ODV", "Via Maletto, 3", "Palermo", "PA"], ["1356", "ERA ACQUEDOLCI", "Via Dante, 28", "Acquedolci", "ME"], ["1357", "EUROPEAN RADIOAMATEURS ASSOCIATION – E.R.A. SEZIONE PROVINCIALE DI AGRIGENTO", "Via Michelangelo, 3", "Santa Margherita del Belice", "AG"], ["1360", "IL CAMMINO", "Via Leonardo da Vinci, 20", "Ragalna", "CT"], ["1361", "ASSOCIAZIONE NUCLEO OPERATIVO ASSISTENZA E SOCCORSO", "Via S. D'Acquisto, s.n.", "Castellammare del Golfo", "TP"], ["1362", "GUARDIA RURALE AUSILIARA CATANIA ODV", "Via Fontanelle, 94", "Caltagirone", "CT"], ["1364", "CROCE ROSSA ITALIANA - COMITATO MASCALUCIA ODV", "Via Francesco Petrarca, 26", "Mascalucia", "CT"], ["1365", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI MARIANOPOLI", "Viale della Regione Siciliana, 5", "Marianopoli", "CL"], ["1366", "FLY TEAM DELEGAZIONE CASTELLAMMARE DEL GOLFO", "Via Segesta, 11", "Castellammare del Golfo", "TP"], ["1367", "ASSOCIAZIONE DI VOLONTARIATO E PROTEZIONE CIVILE GODRANO", "Via Raffaele Jozzino, s.n.c.", "Godrano", "PA"], ["1368", "EVERGREEN", "Via San Giuseppe, 38", "Monreale", "PA"], ["1369", "ANVCS GUARDIE AMBIENTALI ODV", "Via Costanza, 26", "Borgetto", "PA"], ["1370", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI ISNELLO", "Corso Vittorio Emanuele, 14", "Isnello", "PA"], ["1371", "OVERLAND", "Via Domenico Faucello, 16/B", "Messina", "ME"], ["1372", "A.R.E. ASSOCIAZIONE RADIOAMATORI EOLIANI", "Via Culia, s.n.c.", "Lipari", "ME"], ["1373", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI GIBELLINA", "Via Luigi Sturzo, 1", "Gibellina", "TP"], ["1374", "RANGERS D’ITALIA SEZIONE SICILIA ODV", "Via Padre Giordano Cascini, s.n.", "Palermo", "PA"], ["1375", "GIUBBE VERDI COMPAGNIA DI CASTROFILIPPO -ODV", "Via Michelangelo, 9", "Castrofilippo", "AG"], ["1376", "CONFRATERNITA DI MISERICORDIA DI ROSOLINI ODV", "Via Maltese, 65", "Rosolini", "SR"], ["1377", "COORDINAMENTO ZONALE DELLE MISERICORDIE CATANIA -ODV", "Via Pizzo Ferro, 5", "Pedara", "CT"], ["1378", "ASSOCIAZIONE NAZIONALE SST NPCA CASTELDACCIA ODV", "Via Strada Quattro Finaite, 4", "Casteldaccia", "PA"], ["1379", "NUCLEO OPERATIVO INTERFORZE SICILIA – VOLONTARI DI PREVENZIONE E PROTEZIONE CIVILE", "Via Vittorio Emanuele, 7", "Castel di Lucio", "ME"], ["1380", "COMPAGNIA GIUBBE VERDI S. CROCE DI CASTELTERMINI -ODV", "Via G.Matteotti, s.n .", "Casteltermini", "AG"], ["1381", "G.I.V.A. DELEGAZIONE MAZARA DEL VALLO 2019 – ODV", "Via del Fenicottero, 15", "Mazara del Vallo", "TP"], ["1382", "A.N.GI.V. SICILIA ODV", "Via Scibilia, 1", "Bronte", "CT"], ["1383", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI MONTALBANO ELICONA", "Piazza Maria SS.della Provvidenza, s.n.c.", "Montalbano Elicona", "ME"], ["1384", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO DELEGAZIONE DI CONTESSA ENTELLINA", "Via Cucci, 23", "Contessa Entellina", "PA"], ["1385", "SDAV – SECURITY DEPARTMENT ASSOCIAZIONE DI VOLONTARIATO - ODV", "Via Antonio Mongitore, 1", "Agrigento", "AG"], ["1387", "ODV- ASSOCIAZIONE VOLONTARI PROTEZIONE CIVILE BUTERA", "Via Boscaglia, 1", "Butera", "CL"], ["1388", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI CASTRONOVO DI SICILIA", "Vioa Luigi Tirrito, 1", "Castronovo di Sicilia", "PA"], ["1389", "GRUPPO INTERNAZIONALE DEL VOLONTARIATO ARCOBALENO DELEGAZIONE DI VALDINA – ODV", "Via San Nicola, 40/B", "Valdina", "ME"], ["1390", "PUBBLICA ASSISTENZA PROTEZIONE CIVILE NISSORIA", "Via Torre, s.n.c.", "Nissoria", "EN"], ["1391", "AFCT ASSOCIAZIONE FALCO CATANIA – ODV", "Via Spoto, 28", "Catania", "CT"], ["1392", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI RAGALNA", "Via Claudio Monteverdi, 2", "Ragalna", "CT"], ["1393", "ASSOCIAZIONE ITALIANA DELLA CROCE ROSSA COMITATO DI ENNA", "Via Legnano, 22 bis", "Enna", "EN"], ["1394", "G.I.V.A. GRUPPO INTERNAZIONALE VOLONTARIATO ARCOBALENO – DELEGAZIONE DI SALEMI", "Via Monaci, 45", "Salemi", "TP"], ["1395", "CORPO DI PUBBLICA ASSISTENZA PROTEZIONE CIVILE TEMPLARE FEDERICIANA ODV", "Via Alessandro Italia, s.n.c.", "Palazzolo Acreide", "SR"], ["1396", "GUARDIE TERRITORIALI E.T.S.", "V ia G. Crispi, 131", "Palermo", "PA"], ["1397", "VERA ODV", "Via Alfredo Maria Mazzei, 14", "Nicolosi", "CT"], ["1398", "OASI DEL CAVALLO ENGEA GARIBALDINI VOLONTARI", "Via Ceraulo, 23", "Monreale", "PA"], ["1399", "ODV GANZARIA EMERGENZA", "Via Salvatore Lo Tauro, 10", "San Michele di Ganzaria", "CT"], ["1400", "COORDINAMENTO TERRITORIALE VOLONTARIATO PROTEZIONE CIVILE E SOCIALE CO.TE.R ODV", "Via Normanni, 5", "Palermo", "PA"], ["1401", "E.R.A. (EUROPEAN RADIOAMATEURS ASSOCIATION) -SEZIONE DI CORLEONE ODV", "Via Salvatore Aldisio, 161", "Corleone", "PA"], ["1402", "ASSOCIAZIONE VIGILI DEL FUOCO VOLONTARI SEZIONE DI ENNA", "Via Basilicata, 6", "Troina", "EN"], ["1405", "ATTIVITA' OPERATIVA PROTEZIONE CIVILE E SOCIALE ODV", "Via Vinciguerra, 35", "Polizzi Generosa", "PA"], ["1406", "SERVIZI PROTEZIONE CIVILE E SOCIALE ODV", "Via Bergamo, 27", "Palermo", "PA"], ["1407", "O.A.S.S. DELLA CROCE GIOVANNEA ODV – SEZIONE DI BORGETTO (PA)", "Via della Resistenza, 3", "Borgetto", "PA"], ["1408", "GRUPPO COMUNALE VOLONTARI DI PROTEZIONE CIVILE DI OLIVERI", "Piazza Luigi Pirandello, 1", "Oliveri", "ME"], ["1409", "NUCLEO PROTEZIONE CIVILE SANTA MARIA DI LICODIA ODV", "Strada Trainara, 3", "Santa Maria di Licodia", "CT"], ["1410", "NOIS ODV MILITELLO ROSMARINO NUCLEO OPERATIVO INTERFORZE SICILIA", "C.da Santa Maria, s.n.", "Militello Rosmarino", "ME"], ["1411", "RANGERS INTERNATIONAL DELEGAZIONE PIRAINO", "Via Dante Alighieri, 16", "Piraino", "ME"], ["1412", "AMBULANZE MESSINA SOCCORSO ODV", "Via Edoardo Boner, isolato 480, 35", "Messina", "ME"], ["1414", "ASSOCIAZIONE NAZIONALE ELIOS DELEGAZIONE COMUNALE DI ROCCAVALDINA ODV", "Via Panoramica, 6", "Roccavaldina", "ME"], ["1415", "APS DIPARTIMENTO SOLIDARIETA' EMERGENZE FIC SICILIA", "Via Sardegna, 36", "Enna", "EN"], ["1416", "NOIS ODV CAPIZZI NUCLEO OPERATIVO INTERFORZE SICILIA", "Via Piazza San Giacomo, 1", "Capizzi", "ME"], ["1417", "CORPO SANITARIO EMERGENZA E SOCCORSO ODV - ETS", "Corso IV aprile, 11", "Misilmeri", "PA"], ["1418", "ARI RAGUSA ODV ASSOCIAZIONE RADIOAMATORI ITALIANI", "Via S.P. 2 5 k m 6 + 450 c.da T r ib a st o n e", "Ragusa", "RG"], ["1419", "VIGILANZA AMBIENTALE PELORITANI ODV", "Viale della Pace, 12", "Monforte San Giorgio", "ME"], ["1420", "CROCE ROSSA ITALIANA- COMITATO DI ACIREALE - ODV", "Via Lazzaretto, 14 B/C", "Acireale", "CT"], ["1421", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO VOLONTARI DELEGAZIONE DI SALEMI", "C.da Gorgazzo, s.n.c.", "Salemi", "TP"], ["1422", "ODV GRUPPO DI VOLONTARIATO – PROTEZIONE CIVILE E AMBIENTALE ASSOCIAZIONE NAZIONALE DEL FANTE SEZIONE PROVINCIALE DI PALERMO", "Piazza San Francesco di Paola, 37", "Palermo", "PA"], ["1423", "ORGANIZZAZIONE PER LA LOGISTICA E MEZZI SPECIALI MAGNAVIS ODV- GRUPPO MONFORTE SAN GIORGIO", "Viale della Pace, 12", "Monforte San Giorgio", "ME"], ["1424", "CROCE ROSSA ITALIANA- COMITATO DI ROCCALUMERA E TAORMINA", "Via Collegio, 1", "Roccalumera", "ME"], ["1425", "G.I.V.A. GRUPPO INTERNAZIONALE VOLONTARIATO ARCOBALENO DELEGAZIONE DI ROMETTA", "Piazza Graziella Campagna, 13", "Rometta", "ME"], ["1426", "CROCE ROSSA ITALIANA- COMITATO DI TRAPANI", "Viale delle Province Casa Santa", "Erice", "TP"], ["1427", "ASS. ALBATROSA PACECO 2024 – ODV – SICILIA", "Via Marsala, 54", "Paceco", "TP"], ["1428", "CROCE ROSSA ITALIANA - COMITATO DI ALCAMO", "Strada Statale 113 km 326,00, 47", "Alcamo", "TP"], ["1429", "FIF SICILIA 4x4 – PROTEZIONE CIVILE", "XIII Traversa, 41", "Belpasso", "CT"], ["1430", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI LINGUAGLOSSA", "Piazza Municipio, 23", "Linguaglossa", "CT"], ["1431", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO – DELEGAZIONE DI CUSTONACI ODV", "Via Scucina, 150", "Custonaci", "TP"], ["1432", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO - DELEGAZIONE DI VALDERICE ODV", "Piazza G.Verdi, s.n.c.", "Valderice", "TP"], ["1433", "OPERE DI ASSISTENZA SOCCORSO E SOLIDARIETA' DELLA CROCE GIOVANNEA SEZIONE DI CINISI ETS – ODV", "Piazza Pietro Venuti, s.n.c.", "Cinisi", "PA"], ["1434", "NEW GIOIOSA SOCCORSO ODV", "Via Umbero I, 66", "Gioiosa Marea", "ME"], ["1435", "ASSOCIAZIONE NAZIONALE CARABINIERI COORDINAMENTO REGIONALE SICILIA ODV", "Piazza degli Aragonesi, 19/A", "Palermo", "PA"], ["1436", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI BLUFI", "Piazza Municipio, 1", "Blufi", "PA"], ["1437", "ASSOCIAZIONE NAZIONALE S.S.T. SEARCH AND RESCUE", "Via G.Oberdan, 42", "Canicattì", "AG"], ["1438", "ORGANIZZAZIONE NAZIONALE GIUBBE D'ITALIA VOLONTARIATO - ODV SEZIONE PALERMO", "Via Calogero Nicastro, 1", "Palermo", "PA"], ["1439", "SOCCORIAMOLI ODV", "Via del Santo, 52", "Messina", "ME"], ["1440", "PIAZZA ARMERINA SOCCORSO-ODV", "Via Nino Martoglio, 2", "Piazza Armerina", "EN"], ["1441", "CNGEI SEZIONE SCOUT DI NISCEMI BADEN POWELL – APS", "Via Asti, s.n.c.", "Niscemi", "CL"], ["1442", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI S. STEFANO DI QUISQUINA", "Via Roma, 142", "Santo Stefano Quisquina", "AG"], ["1443", "GUARDIA COSTIERA AUSILIARIA CENTRO OPERATIVO DELLE ISOLE EOLIE LIPARI ODV", "Via Vittorio Emanuele, 30", "Lipari", "ME"], ["1444", "ORGANIZZAZIONE NAZIONALE VOLONTARIATO GIUBBE D'ITALIA ODV SEZIONE BAGHERIA", "Via Mulè, 2", "Bagheria", "PA"], ["1445", "ASSOCIAZIONE UNIONE NAZIONALE ARMA CARABINIERIVOLONTARIATO E PROTEZIONE CIVILE ODV – DELEGAZIONE DI LICATA", "Via Della Salvia, 26", "Licata", "AG"], ["1446", "ASSOCIAZIONE ITALIANA SICUREZZA AMBIENTALE “ODV”", "Via Rocca, 21", "Licata", "AG"], ["1447", "SALEMI SOCCORSO", "C.da Filci, 1083", "Trapani", "TP"], ["1448", "RANGERS INTERNATIONAL ODV DELEGAZIONE DI PATTI", "Via Cattaneo, 14", "Patti", "ME"], ["1449", "ARI-SEZIONE DI TERMNI IMERESE ODV", "Via Capaci, 11", "Bagheria", "PA"], ["1450", "RANGERS INTERNATIONAL DELEGAZIONE DI MOTTA D'AFFERMO ODV", "Via Santa Maria, 5", "Motta D'Affermo", "ME"], ["1451", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI CORLEONE", "Piazza Garibaldi, 1", "Corleone", "PA"], ["1452", "ASSOCIAZIONE NAZIONALE CARABINIERI – NUCLEO REGIONALE DI VOLONTARIATO E PROTEZIONE CIVILE – ISPETTORATO SICILIA ODV", "Piazza degli Aragonesi, 19/A", "Palermo", "PA"], ["1453", "CORPO NAZIONALE GUARDIA AI FUOCHI – G.O.I.-GUARDIA AI FUOCHI ETS/ODV", "Via Giove c/da Serroni, 2", "Mazara del Vallo", "TP"], ["1454", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI BRONTE", "Via Arcangelo Spedalieri, 40", "Bronte", "CT"], ["1455", "RANGERS INTERNATIONAL DISTRETTO 055 SICILIA O.D.V.", "Via Generale Cascino", "Castell'Umberto", "ME"], ["1456", "S.S.T. ODV SQUADRE DI SOCCORSO TECNICO – DELEGAZIONE DI PORTO EMPEDOCLE", "Via Siracusa, 12", "Porto Empedocle", "AG"], ["1457", "ORGANIZZAZIONE PER LA LOGISTICA E MEZZI SPECIALI “MAGNA VIS”- GRUPPO LOCALE DI PALAZZO ADRIANO", "C.da Aicella, s.n.c.", "Palazzo Adriano", "PA"], ["1459", "ASSOCIAZIONE PROMOZIONE SOCIALE GUARDIE AMBIENTALI EUROPEE E PROTEZIONE CIVILE", "Via A. De Gasperi, 52", "Trappeto", "PA"], ["1460", "ASSOCIAZIONE I FALCHI DELEGAZIONE DI SCIACCA -ODV", "Cortile Liguori, 63", "Sciacca", "AG"], ["1461", "ASSOCIAZIONE NAZIONALE VOLONTARIATO E COMUNICAZIONE SOLIDALE VILLABATE PFP ODV", "Via Giuseppe Mazzini, 1", "Villabate", "PA"], ["1462", "S.E.A. SERVIZI EMERGENZA ASSISTENZIALI", "Via Antonio Marinuzzi, 145", "Palermo", "PA L"], ["1463", "ASSOCIAZIONE NAZIONALE DI VOLONTARIATO DI PROTEZIONE CIVILE AQUILE", "Via Puglia, 1", "Campofelice di Roccella", "PA"], ["1464", "ODV PROCIV SANITA' BASCHI NERI", "Via Briseide, 1", "Palermo", "PA"], ["1466", "CROCE ROSSA ITALIANA – COMITATO DI MAZARA DEL VALLO ODV", "Corso Armando Diaz, 113", "Mazara del Vallo", "TP"], ["1468", "GUARDIA SICILIANA AMBIENTALE", "Via Foibe Istriane, 3", "Gravina di Catania", "CT"], ["1469", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI TERME VIGLIATORE", "Via del Mare n. 69", "Terme Vigliatore", "ME"], ["1470", "ASSOCIAZIONE ITALIANA PROTEZIONE ANIMALI A.I.P.A. - APS", "Via Serve della Divina Provvidenza, 18", "Catania", "CT"], ["1471", "GRUPPO DI VOLONTARIATO E PROTEZIONE CIVILE DELLA ASSOCIAZIONE NAZIONALE POLIZIA DI STATO", "Via Canonico Nunzio Agnello, 17", "Siracusa", "SR"], ["1472", "RANGERS INTERNATIONAL DELEGAZIONE HIDRA", "Via Dei Combattenti, 18", "Francofonte", "SR"], ["1473", "ASSOCIAZIONE VOLONTARI DI PROTEZIONE CIVILE FERLA ODV", "Via Calvario, 1", "Ferla", "SR"], ["1474", "ASSOCIAZIONE RANGERS INTERNATIONAL DELEGAZIONE TERRE SICANE SAMBUCA DI SICILIA", "Via Stazione, 44", "Sambuca di Sicilia", "AG"], ["1475", "CROCE ROSSA ITALIANA – COMITATO DI AVOLA ODV", "Via Santa Lucia, 86", "Avola", "SR"], ["1476", "ASSOCIAZIONE VOLONTARI EOLIE ORGANIZZAZIONE DI VOLONTARIATO", "Vicolo Diana, s.n.c.", "Lipari", "ME"], ["1477", "ON.V.G.I. SEZIONE DI TRAPANI", "Via Vincenzo Fazio, 22 Fulgatore", "Trapani", "TP"], ["1478", "AVIS PROVINCIALE AGRIGENTO", "Via Pompei, snc", "Sciacca", "AG"], ["1479", "GRUPPO SOCCORRITORI ONLUS", "Via Nicolò della Valle, 123", "Alcamo", "TP"], ["1480", "SEZIONE E.R.A. DI ALTAVILLA MILICIA ODV", "C.da Piano Olivo, s.n.c.", "Altavilla Milicia", "PA"], ["1481", "ASSOCIAZIONE DI VOLONTARIATO PER LA PROTEZIONE CIVILE (P.C.B.)", "Via Castriota, 60", "Biancavilla", "CT"], ["1482", "ASSOCIAZIONE RADIOAMATORI ITALIANI SEZIONE DI AGRIGENTO ODV", "Via Diodoro Siculo, 1", "Agrigento", "AG"], ["1483", "RANGERS INTERNATIONAL O.D.V. DELEGAZIONE DI LONGI", "Via F. Cottone, 13", "Longi", "ME"], ["1484", "SPELEO TEAM TRAPANI ETS", "Via Case di Grazia, 14", "Valderice", "TP"], ["1485", "NUOVA ACROPOLI RAGUSA ODV", "Via Del Gelso, 41", "Ragusa", "RG"], ["1486", "ASS. NUCLEO OPERATIVO PROTEZIONE CIVILE EMERGENZA AMBIENTALE O.D.V. (N.O.P.C.E.A.)", "Via Venuti, 7", "Cinisi", "PA"], ["1487", "PROTEZIONE CIVILE – ASSOCIAZIONE NAZIONALE BERSAGLIERI NUCLEO DI PALERMO ODV", "Via Galileo Galilei, 72", "Palermo", "PA"], ["1488", "ASSOCIAZIONE NUCLEO OPERATIVO VOLONTARI DI PROTEZIONE CIVILE ED EMERGENZA AMBIENTALE N.O.P.C.E.A. CARINI ODV", "Via Antonio Gagini, 44", "Carini", "PA"], ["1489", "C.N.G.E.I. SEZIONE SCOUT RAGUSA APS", "Via Diaz, 25", "Ragusa", "RG"], ["1490", "NUCLEO SOMMOZZATORI E SOCCORSO ACQUATICO DI PROTEZIONE CIVILE REGIONE SICILIA ODV", "Via Libertà, 129", "Isola delle Femmine", "PA"], ["1491", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI CASSARO", "Via Regina Margherita, 112", "Cassaro", "SR"], ["1492", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SCICLI", "Via F. M. Penna, 2", "Scicli", "RG"], ["1493", "ASSOCIAZIONE CIVICI VOLONTARI ANTINCENDIO XIRBI", "C.da Pescazzo, s.n.c.", "Caltanissetta", "CL"], ["1494", "E.R.A. EUROPEAN RADIOAMATEURS ASSOCIATION - CITTA DI NASO ODV", "Via Marconi, 2", "Naso", "ME"], ["1495", "G.I.V.A. - GRUPPO INTERNAZIONALE VOLONTARIATO ARCOBALENO - DELEGAZIONE DI MESSINA -ODV", "Via Janni, 1A", "Messina", "ME"], ["1496", "PROTEZIONE CIVILE SANTO STEFANO QUISQUINA ODV", "Via Teatro, 6", "Santo Stefano Quisquina", "AG"], ["1497", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI CAMPOREALE", "Via Marco Minghetti, 85", "Camporeale", "PA"], ["1498", "PROTEZIONE CIVILE ANB NUCLEO DI TERME VIGLIATORE", "C.da Franchini, 3", "Terme Vigliatore", "ME"], ["1499", "ASSOCIAZIONE NAZIONALE S.S.T. “SEARCH AND RESCUE” ODV DELEGAZIONE MELILLI (SR)", "C.da Passo di Siracusa, s.n.c.", "Melilli", "SR"], ["1500", "ORGANIZZAZIONE DI VOLONTARIATO CROCE SOFIA", "Via Giacomo Besio, 123", "Palermo", "PA"], ["1501", "CROCE ROSSA ITALIANA - COMITATO DI FIUMEFREDDO DI SICILIA", "Via Nino Martoglio, 3", "Fiumefreddo di Sicilia", "CT"], ["1502", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI CAMMARATA", "Via Roma, s.n.c.", "Cammarata", "AG"], ["1503", "ORATORIO SALESIANO RAGUSA ADS- APS", "Corso Italia, 477", "Ragusa", "RG"], ["1504", "SOCCORSO ALPINO E SPELEOLOGO SICILIANO ODV", "Viale Minerva, 28", "Palermo", "PA"], ["1505", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI COLLESANO", "Via Vittorio Emanuele, 2", "Collesano", "PA"], ["1506", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SANTA DOMENICA VITTORIA", "Piazza Aldo Moro, 29", "Santa Domenica Vittoria", "ME"], ["1507", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI CAMPOROTONDO ETNEO", "Via Umberto, 46", "Camporotondo Etneo", "CT"], ["1508", "CORPO FORESTALE VOLONTARIATO ENTE DI SORVEGLIANZA AMBIENTALE E FORESTALE ODV ETS STAZIONE MESSINA", "Via San Felice, 3", "Messina", "ME"], ["1509", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI GIULIANA", "C.da Licciardo, s.n.c.", "Giuliana", "PA"], ["1510", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI PIANA DEGLI ALBANESI", "Via Palmiro Togliatti, 2", "Piana degli Albanesi", "PA"], ["1511", "GISELLA APS", "Via Leonardo da Vinci, 150", "Partanna", "TP"], ["1512", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI MILAZZO", "Via Francesco Crispi, 9", "Milazzo", "ME"], ["1513", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI MESSINA", "Via Franza, 2", "Messina", "ME"], ["1514", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI GALATI MAMERTINO", "Via Roma, 90", "Galati Mamertino", "ME"], ["1515", "EUROPEAN RADIOAMATEURS ASSOCIATION ODV", "Via Porta Agrigento, 86/90", "Raffadali", "AG"], ["1516", "NUCLEO VOLONTARI DI PROTEZIONE CIVILE", "Via Alessandro Manzoni, 40", "Piazza Armerina", "EN"], ["1517", "INSIEME", "C.da Galice, 2", "Patti", "ME"], ["1518", "ASSOCIAZIONE PROTEZIONE CIVILE RAMACCA-ODV", "Via San Giuseppe, 16", "Ramacca", "CT"], ["1519", "ASSOCIAZIONE RANGERS INTERNATIONAL EUROPE-ODV", "Via Roma, 327", "Gagliano Castelferrato", "EN"], ["1520", "ODV GRUPPO VOLONTARIATO E PROTEZIONE CIVILE DELLA ASSOCIAZIONE NAZIONALE DELLA POLIZIA DI STATO – SEZIONE DI PALERMO", "Via Agostino Catalano, 26", "Palermo", "PA"], ["1521", "A.L.I. VOLONTARI IN EMERGENZA - ODV", "Via Cagliari, 12", "Catania", "CT"], ["1522", "LENTO VAGARE APS", "Via Crocci, 264", "Valderice", "TP"], ["1523", "ASSOCIAZIONE NAZIONALE VIGILI DEL FUOCO IN CONGEDO DELEGAZIONE DI PIAZZA ARMERINA ODV", "Contrada Piano Cannata, s.n.c.", "Piazza Armerina", "EN"], ["1524", "OLMS MAGNA VIS MONTELEPRE", "C.da Mandra di Mezzo, s.n.c.", "Montelepre", "PA"], ["1525", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI PORTOPALO DI CAPO PASSERO", "Via LucioTasca, 33", "Portopalo di Capo Passero", "SR"], ["1526", "ASSOCIAZIONE VOLONTARI PROTEZIONE CIVILE SAN CONO ODV", "Via Bruno Buozzi, 18", "San Cono", "CT"], ["1527", "CROCE ROSSA ITALIANA - COMITATO DI SIRACUSA", "Via Elorina, 39", "Siracusa", "SR"], ["1528", "GRUPPO COMUNALE VOLONTARIATO DI PROTEZIONE CIVILE DI SAN GREGORIO DI CATANIA", "Piazza G. Marconi, 11", "San Gregorio di Catania", "CT"], ["1529", "ORGANIZZAZIONE NAZIONALE VOLONTARIATO GIUBBE D'ITALIA ODV SEZIONE - DI PALERMO 2", "Via Empedocle Restivo, 70", "Palermo", "PA"], ["1530", "S.S.T. ODV SQUADRE DI SOCCORSO TECNICO – DELEGAZIONE DI PALMA DI MONTECHIARO", "Via Rossini Gioacchino, 50", "Palma di Montechiaro", "AG"], ["1531", "CORPO FORESTALE VOLONTARIO ENTE DI SORVEGLIANZA AMBIENTALE E FORESTALE ODV", "Via Palermo, 168", "Palma di Montechiaro", "AG"]];
 const PROVINCE_LIST = Array.from(new Set(ASSOCIAZIONI_DB.map((r) => r[4]))).filter(Boolean).sort();
@@ -65,16 +68,22 @@ function downloadCsv(filename, rows) {
 
 export default function App() {
   const [loading, setLoading] = useState(true);
-  const [volontari, setVolontari] = useState([]);
-  const [mezzi, setMezzi] = useState([]);
-  const [config, setConfig] = useState({
-    nomeEmergenza: "Emergenza Protezione Civile",
-    associazioni: [ASSOCIAZIONE_DEFAULT],
-    specializzazioni: SPECIALIZZAZIONI,
-    tipiMezzo: TIPI_MEZZO,
-    turni: TURNI_DEFAULT,
-  });
-  const [archivio, setArchivio] = useState([]);
+
+  // ---------- eventi (condivisi) ----------
+  const [eventi, setEventi] = useState([]);
+  const [eventoOperatoreId, setEventoOperatoreId] = useState(null);
+  const [eventoAdminId, setEventoAdminId] = useState(null);
+
+  // ---------- dati evento OPERATORE ----------
+  const [volontariOp, setVolontariOp] = useState([]);
+  const [mezziOp, setMezziOp] = useState([]);
+  const [configOp, setConfigOp] = useState(defaultConfig());
+
+  // ---------- dati evento ADMIN ----------
+  const [volontariAd, setVolontariAd] = useState([]);
+  const [mezziAd, setMezziAd] = useState([]);
+  const [configAd, setConfigAd] = useState(defaultConfig());
+
   const [associazioneCorrente, setAssociazioneCorrente] = useState(null);
   const [associazioniDb, setAssociazioniDb] = useState(
     ASSOCIAZIONI_DB.map((r) => ({ cod: r[0], denominazione: r[1], sede: r[2], comune: r[3], provincia: r[4] }))
@@ -90,34 +99,58 @@ export default function App() {
   const [tick, setTick] = useState(0);
   const [toast, setToast] = useState(null);
 
+  function defaultConfig() {
+    return { associazioni: [ASSOCIAZIONE_DEFAULT], specializzazioni: SPECIALIZZAZIONI, tipiMezzo: TIPI_MEZZO, turni: TURNI_DEFAULT };
+  }
+  function mergeConfig(parsed) {
+    return { ...defaultConfig(), ...parsed };
+  }
+
+  async function caricaDatiEvento(eventId) {
+    const [v, m, c] = await Promise.allSettled([
+      window.storage.get(KEY_VOL(eventId), true),
+      window.storage.get(KEY_MEZZI(eventId), true),
+      window.storage.get(KEY_CONFIG(eventId), true),
+    ]);
+    return {
+      volontari: v.status === "fulfilled" && v.value ? JSON.parse(v.value.value) : [],
+      mezzi: m.status === "fulfilled" && m.value ? JSON.parse(m.value.value) : [],
+      config: c.status === "fulfilled" && c.value ? mergeConfig(JSON.parse(c.value.value)) : defaultConfig(),
+    };
+  }
+
   // ---------- caricamento iniziale ----------
   useEffect(() => {
     (async () => {
       try {
-        const [v, m, c, a, ac, db] = await Promise.allSettled([
-          window.storage.get(KEY_VOL, true),
-          window.storage.get(KEY_MEZZI, true),
-          window.storage.get(KEY_CONFIG, true),
-          window.storage.get(KEY_ARCHIVIO, true),
+        const [ev, ac, db, evOp, evAd] = await Promise.allSettled([
+          window.storage.get(KEY_EVENTI, true),
           window.storage.get(KEY_ASSOC_CORRENTE, false),
           window.storage.get(KEY_ASSOC_DB, true),
+          window.storage.get(KEY_EVENTO_OP, false),
+          window.storage.get(KEY_EVENTO_ADMIN, false),
         ]);
-        if (v.status === "fulfilled" && v.value) setVolontari(JSON.parse(v.value.value));
-        if (m.status === "fulfilled" && m.value) setMezzi(JSON.parse(m.value.value));
-        if (c.status === "fulfilled" && c.value) {
-          const parsed = JSON.parse(c.value.value);
-          setConfig({
-            nomeEmergenza: "Emergenza Protezione Civile",
-            associazioni: [ASSOCIAZIONE_DEFAULT],
-            specializzazioni: SPECIALIZZAZIONI,
-            tipiMezzo: TIPI_MEZZO,
-            turni: TURNI_DEFAULT,
-            ...parsed,
-          });
-        }
-        if (a.status === "fulfilled" && a.value) setArchivio(JSON.parse(a.value.value));
+        const eventiList = ev.status === "fulfilled" && ev.value ? JSON.parse(ev.value.value) : [];
+        setEventi(eventiList);
         if (ac.status === "fulfilled" && ac.value) setAssociazioneCorrente(JSON.parse(ac.value.value));
         if (db.status === "fulfilled" && db.value) setAssociazioniDb(JSON.parse(db.value.value));
+
+        const opId = evOp.status === "fulfilled" && evOp.value ? JSON.parse(evOp.value.value) : null;
+        const adId = evAd.status === "fulfilled" && evAd.value ? JSON.parse(evAd.value.value) : null;
+        if (opId && eventiList.some((e) => e.id === opId)) {
+          setEventoOperatoreId(opId);
+          const d = await caricaDatiEvento(opId);
+          setVolontariOp(d.volontari);
+          setMezziOp(d.mezzi);
+          setConfigOp(d.config);
+        }
+        if (adId && eventiList.some((e) => e.id === adId)) {
+          setEventoAdminId(adId);
+          const d = await caricaDatiEvento(adId);
+          setVolontariAd(d.volontari);
+          setMezziAd(d.mezzi);
+          setConfigAd(d.config);
+        }
       } catch (e) {
         console.error("Errore caricamento dati", e);
       } finally {
@@ -132,36 +165,31 @@ export default function App() {
     return () => clearInterval(t);
   }, []);
 
-  // aggiornamento periodico dati condivisi (multi-dispositivo)
+  // aggiornamento periodico dati condivisi (multi-dispositivo, multi-evento)
   useEffect(() => {
     const poll = setInterval(async () => {
       try {
-        const [v, m, c, db] = await Promise.allSettled([
-          window.storage.get(KEY_VOL, true),
-          window.storage.get(KEY_MEZZI, true),
-          window.storage.get(KEY_CONFIG, true),
-          window.storage.get(KEY_ASSOC_DB, true),
-        ]);
-        if (v.status === "fulfilled" && v.value) setVolontari(JSON.parse(v.value.value));
-        if (m.status === "fulfilled" && m.value) setMezzi(JSON.parse(m.value.value));
-        if (c.status === "fulfilled" && c.value) {
-          const parsed = JSON.parse(c.value.value);
-          setConfig({
-            nomeEmergenza: "Emergenza Protezione Civile",
-            associazioni: [ASSOCIAZIONE_DEFAULT],
-            specializzazioni: SPECIALIZZAZIONI,
-            tipiMezzo: TIPI_MEZZO,
-            turni: TURNI_DEFAULT,
-            ...parsed,
-          });
-        }
+        const [ev, db] = await Promise.allSettled([window.storage.get(KEY_EVENTI, true), window.storage.get(KEY_ASSOC_DB, true)]);
+        if (ev.status === "fulfilled" && ev.value) setEventi(JSON.parse(ev.value.value));
         if (db.status === "fulfilled" && db.value) setAssociazioniDb(JSON.parse(db.value.value));
+        if (eventoOperatoreId) {
+          const d = await caricaDatiEvento(eventoOperatoreId);
+          setVolontariOp(d.volontari);
+          setMezziOp(d.mezzi);
+          setConfigOp(d.config);
+        }
+        if (isAdmin && eventoAdminId) {
+          const d = await caricaDatiEvento(eventoAdminId);
+          setVolontariAd(d.volontari);
+          setMezziAd(d.mezzi);
+          setConfigAd(d.config);
+        }
       } catch (e) {
         // silenzioso: mantiene l'ultimo stato noto
       }
     }, POLL_MS);
     return () => clearInterval(poll);
-  }, []);
+  }, [eventoOperatoreId, eventoAdminId, isAdmin]);
 
   // gestione uscita da fullscreen tramite ESC/browser
   useEffect(() => {
@@ -177,37 +205,45 @@ export default function App() {
     setTimeout(() => setToast(null), 2500);
   }
 
-  async function persist(key, value) {
+  async function persist(key, value, shared = true) {
     try {
-      await window.storage.set(key, JSON.stringify(value), true);
+      await window.storage.set(key, JSON.stringify(value), shared);
     } catch (e) {
       console.error("Errore salvataggio", key, e);
       showToast("Errore di salvataggio — riprova");
     }
   }
 
-  function saveVolontari(next) {
-    setVolontari(next);
-    persist(KEY_VOL, next);
+  function saveVolontariOp(next) {
+    setVolontariOp(next);
+    if (eventoOperatoreId) persist(KEY_VOL(eventoOperatoreId), next);
   }
-  function saveMezzi(next) {
-    setMezzi(next);
-    persist(KEY_MEZZI, next);
+  function saveMezziOp(next) {
+    setMezziOp(next);
+    if (eventoOperatoreId) persist(KEY_MEZZI(eventoOperatoreId), next);
   }
-  function saveConfig(next) {
-    setConfig(next);
-    persist(KEY_CONFIG, next);
+  function saveVolontariAd(next) {
+    setVolontariAd(next);
+    if (eventoAdminId) persist(KEY_VOL(eventoAdminId), next);
   }
-  function saveArchivio(next) {
-    setArchivio(next);
-    persist(KEY_ARCHIVIO, next);
+  function saveMezziAd(next) {
+    setMezziAd(next);
+    if (eventoAdminId) persist(KEY_MEZZI(eventoAdminId), next);
+  }
+  function saveConfigAd(next) {
+    setConfigAd(next);
+    if (eventoAdminId) persist(KEY_CONFIG(eventoAdminId), next);
+  }
+  function saveEventi(next) {
+    setEventi(next);
+    persist(KEY_EVENTI, next);
   }
   function saveAssociazioniDb(next) {
     setAssociazioniDb(next);
     persist(KEY_ASSOC_DB, next);
   }
 
-  // ---------- azioni operatore ----------
+  // ---------- azioni operatore (sull'evento operatore) ----------
   function incorporaVolontario(data) {
     const rec = {
       id: genId(),
@@ -228,25 +264,15 @@ export default function App() {
       oraUscita: null,
       stato: "in campo",
     };
-    saveVolontari([rec, ...volontari]);
+    saveVolontariOp([rec, ...volontariOp]);
     showToast(`${rec.nome} ${rec.cognome} incorporato/a`);
-  }
-  function scorporaVolontario(id) {
-    saveVolontari(
-      volontari.map((v) => (v.id === id ? { ...v, oraUscita: Date.now(), stato: "rientrato", fineTurno: fmtTime(Date.now()) } : v))
-    );
-  }
-  function updateVolontario(id, patch) {
-    saveVolontari(volontari.map((v) => (v.id === id ? { ...v, ...patch } : v)));
-  }
-  function deleteVolontario(id) {
-    saveVolontari(volontari.filter((v) => v.id !== id));
   }
   function metteMezzoInServizio(data) {
     const rec = {
       id: genId(),
       targa: data.targa.trim(),
       tipo: data.tipo,
+      alimentazione: data.alimentazione || "",
       associazione: (data.associazione || ASSOCIAZIONE_DEFAULT).trim(),
       codiceAssociazione: (data.codiceAssociazione || "").trim(),
       kmIniziali: data.kmIniziali || "",
@@ -256,28 +282,39 @@ export default function App() {
       oraUscita: null,
       stato: "in servizio",
     };
-    saveMezzi([rec, ...mezzi]);
+    saveMezziOp([rec, ...mezziOp]);
     showToast(`Mezzo ${rec.targa} in servizio`);
   }
-  function rientraMezzo(id) {
-    saveMezzi(mezzi.map((m) => (m.id === id ? { ...m, oraUscita: Date.now(), stato: "rientrato" } : m)));
-  }
-  function checkoutMezzo(id, kmFinali) {
-    saveMezzi(
-      mezzi.map((m) => (m.id === id ? { ...m, oraUscita: Date.now(), stato: "rientrato", kmFinali: kmFinali || "" } : m))
+
+  // ---------- azioni admin (sull'evento admin) ----------
+  function scorporaVolontario(id) {
+    saveVolontariAd(
+      volontariAd.map((v) => (v.id === id ? { ...v, oraUscita: Date.now(), stato: "rientrato", fineTurno: fmtTime(Date.now()) } : v))
     );
   }
+  function updateVolontario(id, patch) {
+    saveVolontariAd(volontariAd.map((v) => (v.id === id ? { ...v, ...patch } : v)));
+  }
+  function deleteVolontario(id) {
+    saveVolontariAd(volontariAd.filter((v) => v.id !== id));
+  }
+  function rientraMezzo(id) {
+    saveMezziAd(mezziAd.map((m) => (m.id === id ? { ...m, oraUscita: Date.now(), stato: "rientrato" } : m)));
+  }
+  function checkoutMezzo(id, kmFinali) {
+    saveMezziAd(mezziAd.map((m) => (m.id === id ? { ...m, oraUscita: Date.now(), stato: "rientrato", kmFinali: kmFinali || "" } : m)));
+  }
   function updateMezzo(id, patch) {
-    saveMezzi(mezzi.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+    saveMezziAd(mezziAd.map((m) => (m.id === id ? { ...m, ...patch } : m)));
   }
   function deleteMezzo(id) {
-    saveMezzi(mezzi.filter((m) => m.id !== id));
+    saveMezziAd(mezziAd.filter((m) => m.id !== id));
   }
 
-  // ---------- admin ----------
+  // ---------- admin: login ----------
   function handleLogin(e) {
     e.preventDefault();
-    if (loginUser === ADMIN_USER && loginPass === ADMIN_PASS) {
+    if (loginUser.trim().toLowerCase() === ADMIN_USER.toLowerCase() && loginPass === ADMIN_PASS) {
       setIsAdmin(true);
       setLoginError("");
       setLoginPass("");
@@ -289,31 +326,17 @@ export default function App() {
     setIsAdmin(false);
     setTab("operatore");
   }
-  function chiudiEmergenza() {
-    if (!window.confirm("Chiudere l'emergenza corrente e archiviare i dati? L'elenco operativo verrà azzerato.")) return;
-    const entry = {
-      id: genId(),
-      nomeEmergenza: config.nomeEmergenza,
-      dataChiusura: Date.now(),
-      volontari,
-      mezzi,
-    };
-    saveArchivio([entry, ...archivio]);
-    saveVolontari([]);
-    saveMezzi([]);
-    saveConfig({ ...config, nomeEmergenza: "Nuova emergenza" });
-    showToast("Emergenza archiviata e dati azzerati");
-  }
 
+  // ---------- associazione corrente (operatore, locale al dispositivo) ----------
   function aggiungiAssociazione(nome) {
     const n = nome.trim();
     if (!n) return;
-    const lista = config.associazioni || [];
+    const lista = configAd.associazioni || [];
     if (lista.some((a) => a.toLowerCase() === n.toLowerCase())) return;
-    saveConfig({ ...config, associazioni: [...lista, n] });
+    saveConfigAd({ ...configAd, associazioni: [...lista, n] });
   }
   function rimuoviAssociazione(nome) {
-    saveConfig({ ...config, associazioni: (config.associazioni || []).filter((a) => a !== nome) });
+    saveConfigAd({ ...configAd, associazioni: (configAd.associazioni || []).filter((a) => a !== nome) });
   }
   async function impostaAssociazioneCorrente(assoc) {
     setAssociazioneCorrente(assoc);
@@ -322,7 +345,6 @@ export default function App() {
     } catch (e) {
       console.error("Errore salvataggio associazione corrente", e);
     }
-    aggiungiAssociazione(assoc.denominazione);
   }
   async function cambiaAssociazione() {
     setAssociazioneCorrente(null);
@@ -333,7 +355,79 @@ export default function App() {
     }
   }
 
-  // ---------- database associazioni (admin) ----------
+  // ---------- evento corrente: operatore ----------
+  async function impostaEventoOperatore(id) {
+    setEventoOperatoreId(id);
+    try {
+      await window.storage.set(KEY_EVENTO_OP, JSON.stringify(id), false);
+    } catch (e) {
+      console.error("Errore salvataggio evento operatore", e);
+    }
+    const d = await caricaDatiEvento(id);
+    setVolontariOp(d.volontari);
+    setMezziOp(d.mezzi);
+    setConfigOp(d.config);
+  }
+  async function cambiaEventoOperatore() {
+    setEventoOperatoreId(null);
+    setVolontariOp([]);
+    setMezziOp([]);
+    setConfigOp(defaultConfig());
+    try {
+      await window.storage.delete(KEY_EVENTO_OP, false);
+    } catch (e) {
+      // chiave già assente
+    }
+  }
+
+  // ---------- evento corrente: admin ----------
+  async function impostaEventoAdmin(id) {
+    setEventoAdminId(id);
+    try {
+      await window.storage.set(KEY_EVENTO_ADMIN, JSON.stringify(id), false);
+    } catch (e) {
+      console.error("Errore salvataggio evento admin", e);
+    }
+    const d = await caricaDatiEvento(id);
+    setVolontariAd(d.volontari);
+    setMezziAd(d.mezzi);
+    setConfigAd(d.config);
+  }
+  async function cambiaEventoAdmin() {
+    setEventoAdminId(null);
+    setVolontariAd([]);
+    setMezziAd([]);
+    setConfigAd(defaultConfig());
+    try {
+      await window.storage.delete(KEY_EVENTO_ADMIN, false);
+    } catch (e) {
+      // chiave già assente
+    }
+  }
+
+  // ---------- gestione eventi (admin) ----------
+  function creaEvento(nome) {
+    const n = (nome || "").trim();
+    if (!n) return;
+    const nuovo = { id: genId(), nome: n, createdAt: Date.now(), chiuso: false };
+    saveEventi([nuovo, ...eventi]);
+    showToast(`Evento "${n}" creato`);
+    return nuovo.id;
+  }
+  function rinominaEvento(id, nome) {
+    const n = (nome || "").trim();
+    if (!n) return;
+    saveEventi(eventi.map((e) => (e.id === id ? { ...e, nome: n } : e)));
+  }
+  function chiudiEvento(id) {
+    if (!window.confirm("Chiudere questo evento? Rimarrà consultabile ma non comparirà più tra quelli selezionabili dagli operatori.")) return;
+    saveEventi(eventi.map((e) => (e.id === id ? { ...e, chiuso: true } : e)));
+  }
+  function riapriEvento(id) {
+    saveEventi(eventi.map((e) => (e.id === id ? { ...e, chiuso: false } : e)));
+  }
+
+  // ---------- database associazioni (admin, condiviso e globale) ----------
   function aggiungiAssociazioneDb(obj) {
     const cod = (obj.cod || "").trim();
     if (!cod || associazioniDb.some((a) => a.cod === cod)) return false;
@@ -350,52 +444,58 @@ export default function App() {
     saveAssociazioniDb(associazioniDb.filter((a) => a.cod !== cod));
   }
 
-  // ---------- liste configurabili (specializzazioni / tipi mezzo) ----------
+  // ---------- liste configurabili per evento admin (specializzazioni / tipi mezzo / turni) ----------
   function aggiungiSpecializzazione(nome) {
     const n = nome.trim();
     if (!n) return;
-    const lista = config.specializzazioni?.length ? config.specializzazioni : SPECIALIZZAZIONI;
+    const lista = configAd.specializzazioni?.length ? configAd.specializzazioni : SPECIALIZZAZIONI;
     if (lista.some((x) => x.toLowerCase() === n.toLowerCase())) return;
-    saveConfig({ ...config, specializzazioni: [...lista, n] });
+    saveConfigAd({ ...configAd, specializzazioni: [...lista, n] });
   }
   function rimuoviSpecializzazione(nome) {
-    const lista = config.specializzazioni?.length ? config.specializzazioni : SPECIALIZZAZIONI;
-    saveConfig({ ...config, specializzazioni: lista.filter((x) => x !== nome) });
+    const lista = configAd.specializzazioni?.length ? configAd.specializzazioni : SPECIALIZZAZIONI;
+    saveConfigAd({ ...configAd, specializzazioni: lista.filter((x) => x !== nome) });
   }
   function aggiungiTipoMezzo(nome) {
     const n = nome.trim();
     if (!n) return;
-    const lista = config.tipiMezzo?.length ? config.tipiMezzo : TIPI_MEZZO;
+    const lista = configAd.tipiMezzo?.length ? configAd.tipiMezzo : TIPI_MEZZO;
     if (lista.some((x) => x.toLowerCase() === n.toLowerCase())) return;
-    saveConfig({ ...config, tipiMezzo: [...lista, n] });
+    saveConfigAd({ ...configAd, tipiMezzo: [...lista, n] });
   }
   function rimuoviTipoMezzo(nome) {
-    const lista = config.tipiMezzo?.length ? config.tipiMezzo : TIPI_MEZZO;
-    saveConfig({ ...config, tipiMezzo: lista.filter((x) => x !== nome) });
+    const lista = configAd.tipiMezzo?.length ? configAd.tipiMezzo : TIPI_MEZZO;
+    saveConfigAd({ ...configAd, tipiMezzo: lista.filter((x) => x !== nome) });
   }
   function aggiungiTurno(turno) {
     const nome = (turno.nome || "").trim();
     const inizio = turno.inizio || "";
     const fine = turno.fine || "";
     if (!nome || !inizio || !fine) return;
-    const lista = config.turni?.length ? config.turni : TURNI_DEFAULT;
-    saveConfig({ ...config, turni: [...lista, { id: genId(), nome, inizio, fine }] });
+    const lista = configAd.turni?.length ? configAd.turni : TURNI_DEFAULT;
+    saveConfigAd({ ...configAd, turni: [...lista, { id: genId(), nome, inizio, fine }] });
   }
   function rimuoviTurno(id) {
-    const lista = config.turni?.length ? config.turni : TURNI_DEFAULT;
-    saveConfig({ ...config, turni: lista.filter((t) => t.id !== id) });
+    const lista = configAd.turni?.length ? configAd.turni : TURNI_DEFAULT;
+    saveConfigAd({ ...configAd, turni: lista.filter((t) => t.id !== id) });
   }
 
-  const volontariInCampo = volontari.filter((v) => v.stato === "in campo").length;
-  const mezziInServizio = mezzi.filter((m) => m.stato === "in servizio").length;
+  const volontariInCampo = volontariOp.filter((v) => v.stato === "in campo").length;
+  const mezziInServizio = mezziOp.filter((m) => m.stato === "in servizio").length;
   const associazioniInCampoSet = new Set([
-    ...volontari.filter((v) => v.stato === "in campo").map((v) => v.associazione || ASSOCIAZIONE_DEFAULT),
-    ...mezzi.filter((m) => m.stato === "in servizio").map((m) => m.associazione || ASSOCIAZIONE_DEFAULT),
+    ...volontariOp.filter((v) => v.stato === "in campo").map((v) => v.associazione || ASSOCIAZIONE_DEFAULT),
+    ...mezziOp.filter((m) => m.stato === "in servizio").map((m) => m.associazione || ASSOCIAZIONE_DEFAULT),
   ]);
-  const mezziPerTipo = TIPI_MEZZO.map((t) => ({
-    tipo: t,
-    n: mezzi.filter((m) => m.stato === "in servizio" && m.tipo === t).length,
-  })).filter((x) => x.n > 0);
+  const tipiMezzoOp = configOp?.tipiMezzo?.length ? configOp.tipiMezzo : TIPI_MEZZO;
+  const mezziPerTipo = tipiMezzoOp
+    .map((t) => ({
+      tipo: t,
+      n: mezziOp.filter((m) => m.stato === "in servizio" && m.tipo === t).length,
+    }))
+    .filter((x) => x.n > 0);
+
+  const eventoOperatoreNome = eventi.find((e) => e.id === eventoOperatoreId)?.nome || "";
+  const eventoAdminNome = eventi.find((e) => e.id === eventoAdminId)?.nome || "";
 
   if (loading) {
     return (
@@ -411,7 +511,7 @@ export default function App() {
     <div style={styles.app} id="pc-app-root">
       <StyleBlock />
       <StatusBar
-        config={config}
+        eventoNome={eventoOperatoreNome}
         volontariInCampo={volontariInCampo}
         mezziInServizio={mezziInServizio}
         tick={tick}
@@ -438,22 +538,26 @@ export default function App() {
       <div style={styles.main}>
         {tab === "operatore" && (
           <OperatorView
-            volontari={volontari}
-            mezzi={mezzi}
-            config={config}
+            volontari={volontariOp}
+            mezzi={mezziOp}
+            config={configOp}
             tick={tick}
             associazioneCorrente={associazioneCorrente}
             associazioniDb={associazioniDb}
+            eventi={eventi}
+            eventoCorrenteId={eventoOperatoreId}
+            eventoCorrenteNome={eventoOperatoreNome}
             onSetAssociazioneCorrente={impostaAssociazioneCorrente}
             onCambiaAssociazione={cambiaAssociazione}
+            onSetEvento={impostaEventoOperatore}
+            onCambiaEvento={cambiaEventoOperatore}
             onIncorpora={incorporaVolontario}
-            onScorpora={scorporaVolontario}
             onMezzoIn={metteMezzoInServizio}
-            onMezzoOut={rientraMezzo}
           />
         )}
         {tab === "riepilogo" && (
           <RiepilogoView
+            eventoNome={eventoOperatoreNome}
             volontariInCampo={volontariInCampo}
             associazioniInCampoSet={associazioniInCampoSet}
             mezziPerTipo={mezziPerTipo}
@@ -462,14 +566,36 @@ export default function App() {
           />
         )}
         {tab === "admin" &&
-          (isAdmin ? (
+          (!isAdmin ? (
+            <LoginBox
+              loginUser={loginUser}
+              loginPass={loginPass}
+              setLoginUser={setLoginUser}
+              setLoginPass={setLoginPass}
+              loginError={loginError}
+              onSubmit={handleLogin}
+            />
+          ) : !eventoAdminId ? (
+            <EventiTab
+              eventi={eventi}
+              mode="gate"
+              onSeleziona={impostaEventoAdmin}
+              onCrea={creaEvento}
+              onRinomina={rinominaEvento}
+              onChiudi={chiudiEvento}
+              onRiapri={riapriEvento}
+              onLogout={handleLogout}
+            />
+          ) : (
             <AdminView
-              volontari={volontari}
-              mezzi={mezzi}
-              config={config}
-              archivio={archivio}
+              volontari={volontariAd}
+              mezzi={mezziAd}
+              config={configAd}
               associazioniDb={associazioniDb}
-              onSaveConfig={saveConfig}
+              eventi={eventi}
+              eventoCorrenteId={eventoAdminId}
+              eventoCorrenteNome={eventoAdminNome}
+              onSaveConfig={saveConfigAd}
               onAddAssociazione={aggiungiAssociazione}
               onRemoveAssociazione={rimuoviAssociazione}
               onAddAssociazioneDb={aggiungiAssociazioneDb}
@@ -487,17 +613,13 @@ export default function App() {
               onUpdateMezzo={updateMezzo}
               onDeleteMezzo={deleteMezzo}
               onCheckoutMezzo={checkoutMezzo}
+              onCambiaEvento={cambiaEventoAdmin}
+              onSetEvento={impostaEventoAdmin}
+              onCreaEvento={creaEvento}
+              onRinominaEvento={rinominaEvento}
+              onChiudiEvento={chiudiEvento}
+              onRiapriEvento={riapriEvento}
               onLogout={handleLogout}
-              onChiudiEmergenza={chiudiEmergenza}
-            />
-          ) : (
-            <LoginBox
-              loginUser={loginUser}
-              loginPass={loginPass}
-              setLoginUser={setLoginUser}
-              setLoginPass={setLoginPass}
-              loginError={loginError}
-              onSubmit={handleLogin}
             />
           ))}
       </div>
@@ -510,7 +632,7 @@ export default function App() {
 
       {fullscreenOpen && (
         <FullscreenBoard
-          config={config}
+          eventoNome={eventoOperatoreNome}
           volontariInCampo={volontariInCampo}
           associazioniInCampoSet={associazioniInCampoSet}
           mezziPerTipo={mezziPerTipo}
@@ -526,7 +648,7 @@ export default function App() {
 }
 
 // ================= STATUS BAR =================
-function StatusBar({ config, volontariInCampo, mezziInServizio, tick, onGoHome }) {
+function StatusBar({ eventoNome, volontariInCampo, mezziInServizio, tick, onGoHome }) {
   const now = new Date();
   return (
     <div style={styles.statusBar}>
@@ -540,7 +662,7 @@ function StatusBar({ config, volontariInCampo, mezziInServizio, tick, onGoHome }
         </div>
       </button>
       <div style={styles.flapRow}>
-        <FlapStat label="EMERGENZA" value={config.nomeEmergenza} wide />
+        <FlapStat label="EVENTO" value={eventoNome || "—"} wide />
         <FlapStat label="VOLONTARI IN CAMPO" value={String(volontariInCampo).padStart(2, "0")} accent="orange" />
         <FlapStat label="MEZZI IN SERVIZIO" value={String(mezziInServizio).padStart(2, "0")} accent="green" />
         <FlapStat label="ORA" value={now.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })} />
@@ -619,14 +741,14 @@ function RiepilogoView({ volontariInCampo, associazioniInCampoSet, mezziPerTipo,
   );
 }
 
-function FullscreenBoard({ config, volontariInCampo, associazioniInCampoSet, mezziPerTipo, mezziInServizio, onClose }) {
+function FullscreenBoard({ eventoNome, volontariInCampo, associazioniInCampoSet, mezziPerTipo, mezziInServizio, onClose }) {
   const associazioni = Array.from(associazioniInCampoSet);
   return (
     <div style={styles.fullscreenOverlay}>
       <button style={styles.fullscreenClose} onClick={onClose}>
         <Minimize2 size={16} style={{ marginRight: 6 }} /> Esci
       </button>
-      <div style={styles.fullscreenBrand}>{config.nomeEmergenza}</div>
+      <div style={styles.fullscreenBrand}>{eventoNome || "—"}</div>
       <div style={styles.fullscreenGrid}>
         <div style={styles.fullscreenStat}>
           <div style={styles.fullscreenLabel}>Volontari in campo</div>
@@ -703,12 +825,15 @@ function OperatorView({
   tick,
   associazioneCorrente,
   associazioniDb,
+  eventi,
+  eventoCorrenteId,
+  eventoCorrenteNome,
   onSetAssociazioneCorrente,
   onCambiaAssociazione,
+  onSetEvento,
+  onCambiaEvento,
   onIncorpora,
-  onScorpora,
   onMezzoIn,
-  onMezzoOut,
 }) {
   const [subTab, setSubTab] = useState("home");
   const [justIncorporated, setJustIncorporated] = useState(null);
@@ -743,6 +868,7 @@ function OperatorView({
     codiceAssociazione: assocCodice,
     tipo: tipiMezzoList[0],
     targa: "",
+    alimentazione: TIPI_ALIMENTAZIONE[0],
     kmIniziali: "",
     buonoBenzina: "No",
     referenteVolontarioId: "",
@@ -786,6 +912,10 @@ function OperatorView({
     return <SelezionaAssociazioneView onConferma={onSetAssociazioneCorrente} associazioniDb={associazioniDb} />;
   }
 
+  if (!eventoCorrenteId) {
+    return <SelezionaEventoView eventi={eventi} onConferma={onSetEvento} />;
+  }
+
   return (
     <div style={{ display: "grid", gap: 20 }}>
       <datalist id="associazioni-list">
@@ -806,6 +936,16 @@ function OperatorView({
             </div>
             <button style={styles.btnSecondary} onClick={onCambiaAssociazione}>
               Cambia associazione
+            </button>
+          </div>
+
+          <div style={styles.assocBanner}>
+            <div>
+              <div style={styles.assocBannerLabel}>Evento in corso</div>
+              <div style={styles.assocBannerName}>{eventoCorrenteNome}</div>
+            </div>
+            <button style={styles.btnSecondary} onClick={onCambiaEvento}>
+              Cambia evento
             </button>
           </div>
 
@@ -1027,6 +1167,14 @@ function OperatorView({
                   <input style={styles.input} value={mForm.targa} onChange={(e) => setMForm({ ...mForm, targa: e.target.value })} />
                 </div>
                 <div>
+                  <label style={styles.label}>Alimentazione</label>
+                  <select style={styles.input} value={mForm.alimentazione} onChange={(e) => setMForm({ ...mForm, alimentazione: e.target.value })}>
+                    {TIPI_ALIMENTAZIONE.map((a) => (
+                      <option key={a}>{a}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
                   <label style={styles.label}>Km iniziali</label>
                   <input
                     style={styles.input}
@@ -1231,13 +1379,50 @@ function SelezionaAssociazioneView({ onConferma, associazioniDb }) {
     </div>
   );
 }
+
+// ================= SELEZIONA EVENTO =================
+function SelezionaEventoView({ eventi, onConferma }) {
+  const attivi = eventi.filter((e) => !e.chiuso);
+
+  return (
+    <div style={{ display: "grid", gap: 20 }}>
+      <div style={styles.card}>
+        <h2 style={styles.cardTitle}>Seleziona evento</h2>
+        <p style={{ fontSize: 13, color: "#666", marginBottom: 16 }}>
+          Scegli l'evento/emergenza a cui vuoi registrarti. L'elenco è definito dall'amministratore.
+        </p>
+
+        <div style={{ display: "grid", gap: 8 }}>
+          {attivi.length === 0 && (
+            <div style={styles.emptyText}>
+              Nessun evento disponibile al momento. Contatta l'amministratore per aprirne uno.
+            </div>
+          )}
+          {attivi.map((e) => (
+            <div key={e.id} style={styles.rowItem}>
+              <div>
+                <div style={styles.rowTitle}>{e.nome}</div>
+                <div style={styles.rowMeta}>Avviato il {fmtDate(e.createdAt)}</div>
+              </div>
+              <button style={styles.btnPrimary} onClick={() => onConferma(e.id)}>
+                Seleziona
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 // ================= ADMIN / REPORT =================
 function AdminView({
   volontari,
   mezzi,
   config,
-  archivio,
   associazioniDb,
+  eventi,
+  eventoCorrenteId,
+  eventoCorrenteNome,
   onSaveConfig,
   onAddAssociazione,
   onRemoveAssociazione,
@@ -1256,8 +1441,13 @@ function AdminView({
   onUpdateMezzo,
   onDeleteMezzo,
   onCheckoutMezzo,
+  onCambiaEvento,
+  onSetEvento,
+  onCreaEvento,
+  onRinominaEvento,
+  onChiudiEvento,
+  onRiapriEvento,
   onLogout,
-  onChiudiEmergenza,
 }) {
   const [subTab, setSubTab] = useState("home");
   const associazioni = config.associazioni || [];
@@ -1289,32 +1479,59 @@ function AdminView({
       </div>
 
       {subTab === "home" && (
-        <div style={styles.homeGrid}>
-          <button style={styles.homeTile} onClick={() => setSubTab("panoramica")}>
-            <LayoutGrid size={30} />
-            <div style={styles.homeTileLabel}>Panoramica</div>
-          </button>
-          <button style={styles.homeTile} onClick={() => setSubTab("associazioni")}>
-            <ShieldPlus size={30} />
-            <div style={styles.homeTileLabel}>Associazioni</div>
-          </button>
-          <button style={styles.homeTile} onClick={() => setSubTab("partecipanti")}>
-            <Users size={30} />
-            <div style={styles.homeTileLabel}>Associazioni partecipanti</div>
-          </button>
-          <button style={styles.homeTile} onClick={() => setSubTab("volontari")}>
-            <Users size={30} />
-            <div style={styles.homeTileLabel}>Volontari</div>
-          </button>
-          <button style={styles.homeTile} onClick={() => setSubTab("mezzi")}>
-            <Truck size={30} />
-            <div style={styles.homeTileLabel}>Mezzi</div>
-          </button>
-          <button style={styles.homeTile} onClick={() => setSubTab("impostazioni")}>
-            <RotateCcw size={30} />
-            <div style={styles.homeTileLabel}>Impostazioni</div>
-          </button>
+        <div style={{ display: "grid", gap: 16 }}>
+          <div style={styles.assocBanner} className="no-print">
+            <div>
+              <div style={styles.assocBannerLabel}>Evento in gestione</div>
+              <div style={styles.assocBannerName}>{eventoCorrenteNome}</div>
+            </div>
+            <button style={styles.btnSecondary} onClick={onCambiaEvento}>
+              Cambia evento
+            </button>
+          </div>
+          <div style={styles.homeGrid}>
+            <button style={styles.homeTile} onClick={() => setSubTab("panoramica")}>
+              <LayoutGrid size={30} />
+              <div style={styles.homeTileLabel}>Panoramica</div>
+            </button>
+            <button style={styles.homeTile} onClick={() => setSubTab("eventi")}>
+              <Archive size={30} />
+              <div style={styles.homeTileLabel}>Eventi</div>
+            </button>
+            <button style={styles.homeTile} onClick={() => setSubTab("associazioni")}>
+              <ShieldPlus size={30} />
+              <div style={styles.homeTileLabel}>Associazioni</div>
+            </button>
+            <button style={styles.homeTile} onClick={() => setSubTab("partecipanti")}>
+              <Users size={30} />
+              <div style={styles.homeTileLabel}>Associazioni partecipanti</div>
+            </button>
+            <button style={styles.homeTile} onClick={() => setSubTab("volontari")}>
+              <Users size={30} />
+              <div style={styles.homeTileLabel}>Volontari</div>
+            </button>
+            <button style={styles.homeTile} onClick={() => setSubTab("mezzi")}>
+              <Truck size={30} />
+              <div style={styles.homeTileLabel}>Mezzi</div>
+            </button>
+            <button style={styles.homeTile} onClick={() => setSubTab("impostazioni")}>
+              <RotateCcw size={30} />
+              <div style={styles.homeTileLabel}>Impostazioni</div>
+            </button>
+          </div>
         </div>
+      )}
+
+      {subTab === "eventi" && (
+        <EventiTab
+          eventi={eventi}
+          mode="manage"
+          onSeleziona={onSetEvento}
+          onCrea={onCreaEvento}
+          onRinomina={onRinominaEvento}
+          onChiudi={onChiudiEvento}
+          onRiapri={onRiapriEvento}
+        />
       )}
 
       {subTab === "panoramica" && (
@@ -1365,19 +1582,15 @@ function AdminView({
 
       {subTab === "impostazioni" && (
         <ImpostazioniTab
-          config={config}
-          archivio={archivio}
           specializzazioniList={specializzazioniList}
           tipiMezzoList={tipiMezzoList}
           turniList={config?.turni?.length ? config.turni : TURNI_DEFAULT}
-          onSaveConfig={onSaveConfig}
           onAddSpecializzazione={onAddSpecializzazione}
           onRemoveSpecializzazione={onRemoveSpecializzazione}
           onAddTipoMezzo={onAddTipoMezzo}
           onRemoveTipoMezzo={onRemoveTipoMezzo}
           onAddTurno={onAddTurno}
           onRemoveTurno={onRemoveTurno}
-          onChiudiEmergenza={onChiudiEmergenza}
         />
       )}
     </div>
@@ -1574,6 +1787,10 @@ function PartecipantiTab({ associazioniPartecipanti, volontari, mezzi, associazi
   function escapeHtml(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
+  function referenteNomeMezzo(id) {
+    const v = volontari.find((x) => x.id === id);
+    return v ? `${v.cognome} ${v.nome}` : "";
+  }
 
   function buildRegistroHtml(associazione, giornoFmt, turno, volontariFiltrati, mezziFiltrati) {
     const righeVol = volontariFiltrati.length
@@ -1594,7 +1811,7 @@ function PartecipantiTab({ associazioniPartecipanti, volontari, mezzi, associazi
           .map(
             (m) => `<tr>
         <td>${escapeHtml(m.tipo)}</td><td>${escapeHtml(m.targa)}</td><td>${escapeHtml(m.kmIniziali)}</td>
-        <td>${escapeHtml(m.kmFinali)}</td><td>${escapeHtml(m.buonoBenzina)}</td><td></td><td></td><td></td>
+        <td>${escapeHtml(m.kmFinali)}</td><td>${escapeHtml(m.buonoBenzina)}</td><td>${escapeHtml(referenteNomeMezzo(m.referenteVolontarioId))}</td><td></td><td>${escapeHtml(m.alimentazione)}</td>
       </tr>`
           )
           .join("")
@@ -1611,14 +1828,15 @@ function PartecipantiTab({ associazioniPartecipanti, volontari, mezzi, associazi
   * { box-sizing: border-box; }
   body { font-family: Arial, Helvetica, sans-serif; color: #111; margin: 0; padding: 24px 28px; }
   .sheet { max-width: 1000px; margin: 0 auto; }
-  .header-row { display: flex; gap: 20px; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 16px; }
-  .cod-box { border: 1px solid #111; padding: 6px 14px; text-align: center; font-size: 11px; font-weight: 600; }
-  .cod-box div { font-size: 18px; margin-top: 4px; }
-  .field-line { font-size: 13px; margin-bottom: 4px; }
-  .section-title { font-weight: 700; letter-spacing: 0.08em; font-size: 14px; margin: 10px 0 8px; text-transform: uppercase; }
-  table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 6px; }
-  th, td { border: 1px solid #111; padding: 5px 6px; height: 22px; }
-  th { background: #EFEBE1; font-size: 10px; text-transform: uppercase; }
+  .header-row { display: flex; gap: 20px; align-items: flex-start; border: 2px solid #111; border-bottom: 1px solid #111; padding: 10px 14px; margin-bottom: 0; }
+  .cod-box { border: 1px solid #111; padding: 6px 14px; text-align: right; font-size: 10px; font-weight: 700; }
+  .cod-box div { font-size: 18px; font-weight: 700; margin-top: 4px; text-align: center; }
+  .field-line { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .section-title { font-weight: 700; letter-spacing: 0.12em; font-size: 11px; margin: 0; padding: 5px; text-align: center; text-transform: uppercase; border: 2px solid #111; border-top: none; }
+  table { width: 100%; border-collapse: collapse; font-size: 10px; margin: 0 0 20px; border: 2px solid #111; border-top: none; }
+  th, td { border: 1px solid #111; padding: 4px 5px; height: 20px; }
+  th { background: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase; text-align: center; }
+  td { font-family: "Times New Roman", Times, serif; font-size: 10px; }
   .footer { margin-top: 40px; text-align: right; font-size: 13px; border-top: 1px solid #111; padding-top: 30px; width: 280px; margin-left: auto; }
   @media print { body { padding: 10px 14px; } }
 </style>
@@ -1975,10 +2193,10 @@ function MezziTab({ mezzi, volontari, associazioni, tipiMezzoList, onUpdate, onD
   }
 
   function exportCsv() {
-    const rows = [["Targa", "Tipo", "Associazione", "Codice associazione", "Km iniziali", "Km finali", "Buono benzina", "Referente", "Ingresso", "Uscita", "Stato"]];
+    const rows = [["Targa", "Tipo", "Alimentazione", "Associazione", "Codice associazione", "Km iniziali", "Km finali", "Buono benzina", "Referente", "Ingresso", "Uscita", "Stato"]];
     filtrati.forEach((m) =>
       rows.push([
-        m.targa, m.tipo, m.associazione || ASSOCIAZIONE_DEFAULT, m.codiceAssociazione || "", m.kmIniziali || "", m.kmFinali || "",
+        m.targa, m.tipo, m.alimentazione || "", m.associazione || ASSOCIAZIONE_DEFAULT, m.codiceAssociazione || "", m.kmIniziali || "", m.kmFinali || "",
         m.buonoBenzina || "No", referenteNome(m.referenteVolontarioId), fmtDate(m.oraIngresso) + " " + fmtTime(m.oraIngresso),
         m.oraUscita ? fmtDate(m.oraUscita) + " " + fmtTime(m.oraUscita) : "", m.stato,
       ])
@@ -2018,6 +2236,7 @@ function MezziTab({ mezzi, volontari, associazioni, tipiMezzoList, onUpdate, onD
             <tr>
               <th style={styles.th}>Targa</th>
               <th style={styles.th}>Tipo</th>
+              <th style={styles.th}>Alimentazione</th>
               <th style={styles.th}>Associazione</th>
               <th style={styles.th}>Km iniziali</th>
               <th style={styles.th}>Km finali</th>
@@ -2030,7 +2249,7 @@ function MezziTab({ mezzi, volontari, associazioni, tipiMezzoList, onUpdate, onD
           <tbody>
             {filtrati.length === 0 && (
               <tr>
-                <td style={styles.td} colSpan={9}>
+                <td style={styles.td} colSpan={10}>
                   <span style={styles.emptyText}>Nessun risultato per i filtri selezionati.</span>
                 </td>
               </tr>
@@ -2038,7 +2257,7 @@ function MezziTab({ mezzi, volontari, associazioni, tipiMezzoList, onUpdate, onD
             {filtrati.map((m) =>
               editingId === m.id ? (
                 <tr key={m.id}>
-                  <td style={styles.td} colSpan={9}>
+                  <td style={styles.td} colSpan={10}>
                     <div style={{ display: "grid", gap: 8, padding: "8px 0" }}>
                       <div style={styles.grid2} className="grid2-force">
                         <input style={styles.input} value={editDraft.targa} onChange={(e) => setEditDraft({ ...editDraft, targa: e.target.value })} placeholder="Targa" />
@@ -2048,6 +2267,11 @@ function MezziTab({ mezzi, volontari, associazioni, tipiMezzoList, onUpdate, onD
                           ))}
                         </select>
                       </div>
+                      <select style={styles.input} value={editDraft.alimentazione || ""} onChange={(e) => setEditDraft({ ...editDraft, alimentazione: e.target.value })}>
+                        {TIPI_ALIMENTAZIONE.map((a) => (
+                          <option key={a}>{a}</option>
+                        ))}
+                      </select>
                       <input style={styles.input} list="associazioni-list-admin2" value={editDraft.associazione} onChange={(e) => setEditDraft({ ...editDraft, associazione: e.target.value })} placeholder="Associazione" />
                       <input style={styles.input} type="number" value={editDraft.kmIniziali} onChange={(e) => setEditDraft({ ...editDraft, kmIniziali: e.target.value })} placeholder="Km iniziali" />
                       <div style={{ display: "flex", gap: 8 }}>
@@ -2065,6 +2289,7 @@ function MezziTab({ mezzi, volontari, associazioni, tipiMezzoList, onUpdate, onD
                 <tr key={m.id}>
                   <td style={styles.td}>{m.targa}</td>
                   <td style={styles.td}>{m.tipo}</td>
+                  <td style={styles.td}>{m.alimentazione || "—"}</td>
                   <td style={styles.td}>{m.associazione || ASSOCIAZIONE_DEFAULT}</td>
                   <td style={styles.td}>{m.kmIniziali || "—"}</td>
                   <td style={styles.td}>{m.kmFinali || "—"}</td>
@@ -2130,52 +2355,22 @@ function MezziTab({ mezzi, volontari, associazioni, tipiMezzoList, onUpdate, onD
 
 // ================= ADMIN: IMPOSTAZIONI =================
 function ImpostazioniTab({
-  config,
-  archivio,
   specializzazioniList,
   tipiMezzoList,
   turniList,
-  onSaveConfig,
   onAddSpecializzazione,
   onRemoveSpecializzazione,
   onAddTipoMezzo,
   onRemoveTipoMezzo,
   onAddTurno,
   onRemoveTurno,
-  onChiudiEmergenza,
 }) {
-  const [nomeEmergenza, setNomeEmergenza] = useState(config.nomeEmergenza);
   const [nuovaSpec, setNuovaSpec] = useState("");
   const [nuovoTipo, setNuovoTipo] = useState("");
   const [nuovoTurno, setNuovoTurno] = useState({ nome: "", inizio: "", fine: "" });
 
-  useEffect(() => {
-    setNomeEmergenza(config.nomeEmergenza);
-  }, [config.nomeEmergenza]);
-
-  function exportArchivioCsv(entry) {
-    const rows = [["Cognome", "Nome", "Associazione", "Specializzazione", "Luogo attività", "Inizio turno", "Fine turno", "Uscita"]];
-    entry.volontari.forEach((v) =>
-      rows.push([
-        v.cognome, v.nome, v.associazione || ASSOCIAZIONE_DEFAULT, v.specializzazione || "", v.luogoAttivita || "",
-        v.inizioTurno || fmtTime(v.oraIngresso), v.fineTurno || "", v.oraUscita ? fmtTime(v.oraUscita) : "",
-      ])
-    );
-    downloadCsv(`archivio_${entry.nomeEmergenza.replace(/\s+/g, "_")}.csv`, rows);
-  }
-
   return (
     <div style={{ display: "grid", gap: 20 }}>
-      <div style={styles.card}>
-        <h2 style={styles.cardTitle}>Nome emergenza</h2>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <input style={{ ...styles.input, width: 280 }} value={nomeEmergenza} onChange={(e) => setNomeEmergenza(e.target.value)} placeholder="Nome emergenza" />
-          <button style={styles.btnSecondary} onClick={() => onSaveConfig({ ...config, nomeEmergenza })}>
-            Salva nome
-          </button>
-        </div>
-      </div>
-
       <div style={styles.card}>
         <h2 style={styles.cardTitle}>Specializzazioni volontari</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
@@ -2310,38 +2505,129 @@ function ImpostazioniTab({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ================= ADMIN: EVENTI =================
+function EventiTab({ eventi, mode, onSeleziona, onCrea, onRinomina, onChiudi, onRiapri, onLogout }) {
+  const [nuovoNome, setNuovoNome] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editNome, setEditNome] = useState("");
+
+  const attivi = eventi.filter((e) => !e.chiuso);
+  const chiusi = eventi.filter((e) => e.chiuso);
+
+  function submitNuovo(e) {
+    e.preventDefault();
+    if (!nuovoNome.trim()) return;
+    const id = onCrea(nuovoNome);
+    setNuovoNome("");
+    if (id) onSeleziona(id);
+  }
+
+  function salvaRinomina(id) {
+    onRinomina(id, editNome);
+    setEditingId(null);
+  }
+
+  return (
+    <div style={{ display: "grid", gap: 20 }}>
+      {mode === "gate" && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }} className="no-print">
+          <div />
+          <button style={styles.btnGhost} onClick={onLogout}>
+            <LogOut size={16} style={{ marginRight: 6 }} /> Esci
+          </button>
+        </div>
+      )}
 
       <div style={styles.card}>
-        <h2 style={styles.cardTitle}>
-          <Archive size={16} style={{ marginRight: 6, verticalAlign: -3 }} /> Storico emergenze ({archivio.length})
-        </h2>
-        <div style={{ display: "grid", gap: 8 }}>
-          {archivio.length === 0 && <div style={styles.emptyText}>Nessuna emergenza archiviata.</div>}
-          {archivio.map((e) => (
-            <div key={e.id} style={styles.rowItem}>
-              <div>
-                <div style={styles.rowTitle}>{e.nomeEmergenza}</div>
-                <div style={styles.rowMeta}>
-                  Chiusa il {fmtDate(e.dataChiusura)} · {e.volontari.length} volontari · {e.mezzi.length} mezzi
+        <h2 style={styles.cardTitle}>{mode === "gate" ? "Seleziona un evento" : "Eventi"}</h2>
+        <p style={{ fontSize: 13, color: "#666", marginBottom: 16 }}>
+          Ogni evento ha volontari, mezzi e impostazioni propri e indipendenti. Puoi gestire più eventi in contemporanea: ogni
+          postazione (dispositivo) può lavorare su un evento diverso.
+        </p>
+
+        <div style={{ display: "grid", gap: 8, marginBottom: 20 }}>
+          {attivi.length === 0 && <div style={styles.emptyText}>Nessun evento attivo. Creane uno qui sotto.</div>}
+          {attivi.map((e) =>
+            editingId === e.id ? (
+              <div key={e.id} style={{ ...styles.rowItem, gap: 8 }}>
+                <input style={{ ...styles.input, flex: 1 }} value={editNome} onChange={(ev) => setEditNome(ev.target.value)} />
+                <button style={styles.btnPrimary} onClick={() => salvaRinomina(e.id)}>
+                  Salva
+                </button>
+                <button style={styles.btnSecondary} onClick={() => setEditingId(null)}>
+                  Annulla
+                </button>
+              </div>
+            ) : (
+              <div key={e.id} style={styles.rowItem}>
+                <div>
+                  <div style={styles.rowTitle}>{e.nome}</div>
+                  <div style={styles.rowMeta}>Creato il {fmtDate(e.createdAt)}</div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button style={styles.btnPrimary} onClick={() => onSeleziona(e.id)}>
+                    Seleziona
+                  </button>
+                  <button
+                    style={styles.btnSecondary}
+                    onClick={() => {
+                      setEditingId(e.id);
+                      setEditNome(e.nome);
+                    }}
+                  >
+                    Rinomina
+                  </button>
+                  <button style={styles.btnGhostRed} onClick={() => onChiudi(e.id)}>
+                    Chiudi
+                  </button>
                 </div>
               </div>
-              <button style={styles.btnSecondary} onClick={() => exportArchivioCsv(e)}>
-                <Download size={14} style={{ marginRight: 6 }} /> CSV
-              </button>
-            </div>
-          ))}
+            )
+          )}
         </div>
+
+        <form onSubmit={submitNuovo} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input
+            style={{ ...styles.input, maxWidth: 300 }}
+            placeholder="Nome nuovo evento (es. Alluvione ottobre 2026)"
+            value={nuovoNome}
+            onChange={(e) => setNuovoNome(e.target.value)}
+          />
+          <button type="submit" style={styles.btnPrimary}>
+            <Plus size={16} style={{ marginRight: 6 }} /> Crea evento
+          </button>
+        </form>
       </div>
 
-      <div style={{ ...styles.card, borderColor: "var(--red)" }}>
-        <h2 style={{ ...styles.cardTitle, color: "var(--red)" }}>Chiusura emergenza</h2>
-        <p style={{ fontSize: 13, color: "#555", marginBottom: 12 }}>
-          Archivia i dati correnti nello storico e azzera l'elenco operativo per iniziare una nuova emergenza.
-        </p>
-        <button style={styles.btnDanger} onClick={onChiudiEmergenza}>
-          <RotateCcw size={16} style={{ marginRight: 6 }} /> Chiudi emergenza e azzera
-        </button>
-      </div>
+      {chiusi.length > 0 && (
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>
+            <Archive size={16} style={{ marginRight: 6, verticalAlign: -3 }} /> Eventi chiusi ({chiusi.length})
+          </h2>
+          <div style={{ display: "grid", gap: 8 }}>
+            {chiusi.map((e) => (
+              <div key={e.id} style={styles.rowItem}>
+                <div>
+                  <div style={styles.rowTitle}>{e.nome}</div>
+                  <div style={styles.rowMeta}>Creato il {fmtDate(e.createdAt)} · chiuso</div>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button style={styles.btnSecondary} onClick={() => onSeleziona(e.id)}>
+                    Consulta
+                  </button>
+                  <button style={styles.btnSecondary} onClick={() => onRiapri(e.id)}>
+                    Riapri
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
